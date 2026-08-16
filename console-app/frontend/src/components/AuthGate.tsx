@@ -18,7 +18,12 @@ export function AuthGate({ children }: Props) {
     api
       .getAuthStatus()
       .then((s) => setStatus(!s.authRequired || s.authenticated ? "open" : "locked"))
-      .catch(() => setStatus("open")); // fail open locally if the backend isn't reachable yet
+      // Fail CLOSED, not open: we can't tell from a network error whether
+      // AUTH_MODE is "none" (locally) or "password" (Azure) -- opening on
+      // any transient error would defeat the gate on the one deployment
+      // that actually needs it. Locally this only ever shows briefly while
+      // the backend is still starting.
+      .catch(() => setStatus("locked"));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

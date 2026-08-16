@@ -18,8 +18,13 @@ server {
     # for why (a variable in proxy_pass disables location-prefix rewriting,
     # so the original /api/... request URI passes through unchanged, which
     # is correct since the backend's routes are already mounted under /api).
+    # proxy_http_version 1.1 -- see console-app/frontend/nginx.conf.template
+    # for why (Azure Container Apps' ingress rejects nginx's default
+    # HTTP/1.0 upstream proxying with a bare 426 Upgrade Required).
     location /api/ {
         set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
         proxy_pass http://$backend;
         proxy_set_header Host $host;
         proxy_read_timeout 120s;
@@ -27,6 +32,8 @@ server {
 
     location /healthz {
         set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
         proxy_pass http://$backend;
     }
 

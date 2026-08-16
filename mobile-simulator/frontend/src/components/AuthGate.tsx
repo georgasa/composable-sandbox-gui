@@ -17,7 +17,9 @@ export function AuthGate({ children }: Props) {
     api
       .getAuthStatus()
       .then((s) => setStatus(!s.authRequired || s.authenticated ? "open" : "locked"))
-      .catch(() => setStatus("open"));
+      // Fail CLOSED -- see console-app's AuthGate.tsx for why (can't tell
+      // a transient network error from a real AUTH_MODE=password gate).
+      .catch(() => setStatus("locked"));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

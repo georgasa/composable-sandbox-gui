@@ -32,8 +32,16 @@ server {
     # "proxy_pass http://$backend/api/;" here silently 404'd every request,
     # because with a variable present that trailing "/api/" is NOT treated
     # as a location-prefix replacement -- it's simply not applied.
+    # proxy_http_version 1.1 (nginx defaults upstream proxying to HTTP/1.0
+    # unless told otherwise) -- Azure Container Apps' Envoy-based internal
+    # ingress rejects HTTP/1.0 with a bare "426 Upgrade Required", which
+    # silently broke every /api/* call once deployed (worked fine locally
+    # against plain Docker Compose, which doesn't care about the HTTP
+    # version). Discovered live on the first real Azure deployment.
     location /api/ {
         set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
         proxy_pass http://$backend;
         proxy_set_header Host $host;
         proxy_read_timeout 120s;
@@ -41,6 +49,8 @@ server {
 
     location /healthz {
         set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
         proxy_pass http://$backend;
     }
 
