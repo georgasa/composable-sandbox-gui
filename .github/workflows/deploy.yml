@@ -18,13 +18,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # azure/login@v2 dropped support for separate client-id/client-secret
+      # inputs for classic (non-OIDC) service principal auth -- discovered
+      # live, first run failed with "Unexpected input(s) 'client-secret'"
+      # then an OIDC federated-token error, since without client-secret it
+      # assumes OIDC. The single `creds` JSON blob (the classic
+      # az ad sp create-for-rbac output shape) is what actually works here.
       - name: Azure login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       # Builds happen inside ACR (az acr build) -- no local Docker needed on
       # the runner, and it's the same command infra/provision.sh used for
