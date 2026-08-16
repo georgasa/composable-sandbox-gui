@@ -1,0 +1,7 @@
+# Sourced (not executed) by the official nginx image's entrypoint before
+# 20-envsubst-on-templates.sh runs -- exports RESOLVER_IP so
+# nginx.conf.template's "resolver ${RESOLVER_IP}" picks up whatever DNS
+# server this container actually has (Docker's embedded 127.0.0.11 locally,
+# Azure Container Apps' internal DNS in the cloud) instead of a hardcoded
+# address that would only work in one of the two environments.
+export RESOLVER_IP="$(awk '/^nameserver/{print $2; exit}' /etc/resolv.conf)"

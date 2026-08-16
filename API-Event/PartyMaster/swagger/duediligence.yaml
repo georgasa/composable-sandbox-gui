@@ -1,0 +1,1365 @@
+openapi: 3.0.0
+info:
+  title: Party Management APIs - Due Diligence - Applicable for Individuals and Organisations
+  description: Temenos Party Microservice provides a party register for financial entities and encompasses an extensive set of RESTful APIs that streamline the administration of the party data.Structured into four distinct Open API Specification documents, this specification comprehensively covers a range of endpoints specific to the Due Diligence of the Parties.
+  contact:
+    url: https://basecamp.temenos.com/s/topic/0TO2K0000005Pz4WAE/microservices
+  version: 1.0.0
+servers:
+- description: Example of valid server URL
+  url: http://localhost:8000/ms-partyv2-api/api/v1.0.0
+externalDocs:
+  url: https://docs.temenos.com/docs/Solutions/Infinity/Microservices/Modules/Microservices/Party/Misc/Party.html
+  description: Find more information here
+tags:
+- name: Due Diligence
+  description: A set of API to create, maintain and retrieve the correspondence Due Diligence
+    of a party
+paths:
+  /reference/dueDiligence/questionDefinitions/{questionReference}:
+    post:
+      summary: Captures a due diligence question definition, including the answer type, allowed options and maximum number of options that can be given, if applicable to the answer type
+      tags:
+       - Reference
+      operationId: createDueDiligenceQuestions
+      parameters:
+        - name: questionReference
+          in: path
+          description: The question reference
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            example: ExtractiveIndustryActivities           
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDueDiligenceQuestionsRequest'
+      responses:
+        '200':
+          description: Due Diligence Question created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+
+    put:
+      summary: Updates the details of a due diligence question
+      tags:
+       - Reference
+      operationId: updateDueDiligenceQuestions
+      parameters:
+        - name: questionReference
+          in: path
+          description: The question reference
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            example: ExtractiveIndustryActivities               
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDueDiligenceQuestionsRequest'
+      responses:
+        '200':
+          description: Due Diligence Questions updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+    delete:
+      summary: Deletes the details of a due diligence question
+      operationId: deleteDueDiligenceQuestions
+      tags:
+       - Reference
+      parameters:
+       - name: questionReference
+         in: path
+         description: The question reference
+         required: true
+         schema:
+            type: string
+            minLength: 1
+            example: ExtractiveIndustryActivities                
+      responses:
+        '200':
+          description: DueDiligence Questions deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'   
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"               
+    get:
+      summary: Retrieves the details of a due diligence question
+      operationId: getDueDiligenceQuestions
+      tags:
+       - Reference
+      parameters:
+       - name: questionReference
+         in: path
+         description: The question reference
+         required: true
+         schema:
+            type: string
+            minLength: 1
+            example: ExtractiveIndustryActivities        
+      responses:
+        '200':
+          description: Details of a due diligence question is Retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DueDiligenceQuestionsResponse'  
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"   
+  /reference/dueDiligence/questionDefinitions:             
+    get:
+      summary: Retrieves all the questions and their details
+      operationId: getDueDiligenceQuestionsAll
+      tags:
+       - Reference
+      responses:
+        '200':
+          description: country codes updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DueDiligenceQuestionsAllList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+    
+  /party/{partyId}/dueDiligence:
+    post:
+      summary: Captures the due diligence details for party and the questions and answers given to one or multiple questionnaires
+      operationId: capturedueDiligence
+      tags:
+      - Due Diligence
+      parameters:
+      - name: partyId
+        in: path
+        description: The unique identifier of the party. It can be automatically allocated
+          by the system or imposed by an external system through ingestion. Must be
+          unique within the microservice.
+        required: true
+        x-altkey: true
+        schema:
+          type: string
+          minLength: 1
+          example: 100100
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapturedueDiligenceRequest'
+      responses:
+        '200':
+          description: party names updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse422'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+  /party/{partyId}/dueDiligence/questionnairesAnswers/:
+    post:
+      summary: Captures answers given by the party to a new Due Dilligence questionnaires
+      operationId: addQuestionnaire
+      tags:
+      - Due Diligence
+      parameters:
+      - name: partyId
+        in: path
+        description: The unique identifier of the party. It can be automatically allocated
+          by the system or imposed by an external system through ingestion. Must be
+          unique within the microservice.
+        required: true
+        x-altkey: true
+        schema:
+          type: string
+          minLength: 1
+          example: 100100
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddQuestionnaireDueDiligenceRequest'
+      responses:
+        '200':
+          description: party names updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse422'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+
+  /party/{partyId}/dueDiligence/questionnairesAnswers/{questionnaireReference}:
+    put:
+      summary: Updates the answers for the supplied party and supplied questionnaire reference
+      operationId: updateQuestionnaire
+      tags:
+      - Due Diligence
+      parameters:
+      - name: partyId
+        in: path
+        description: The unique identifier of the party. It can be automatically allocated
+          by the system or imposed by an external system through ingestion. Must be
+          unique within the microservice.
+        required: true
+        x-altkey: true
+        schema:
+          type: string
+          minLength: 1
+          example: 100100
+      - name: questionnaireReference
+        in: path
+        description: questionnaire reference.
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          example: IndividualOnboardingForm
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapturedueDiligenceRequestForUpdates'
+      responses:
+        '200':
+          description: party names updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse422'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+    delete:
+      summary: Deletes the questionnaire's answers for a given party and a given questionnaire reference
+      operationId: deleteQuestionnaire
+      tags:
+      - Due Diligence
+      parameters:
+      - name: partyId
+        in: path
+        description: The unique identifier of the party. It can be automatically allocated
+          by the system or imposed by an external system through ingestion. Must be
+          unique within the microservice.
+        required: true
+        x-altkey: true
+        schema:
+          type: string
+          minLength: 1
+          example: 100100
+      - name: questionnaireReference
+        in: path
+        description: questionnaire reference.
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          example: IndividualOnboardingForm
+      responses:
+        '200':
+          description: DueDiligence Questionnaire deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'   
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+    get:
+      summary: Retrieves the answers given by the party for a given questionnaire 
+      operationId: getQuestionsAndAnswers
+      tags:
+       - Due Diligence
+      parameters:
+      - name: partyId
+        in: path
+        description: The unique identifier of the party. It can be automatically allocated
+          by the system or imposed by an external system through ingestion. Must be
+          unique within the microservice.
+        required: true
+        x-altkey: true
+        schema:
+          type: string
+          minLength: 1
+          example: 100100
+      - name: questionnaireReference
+        in: path
+        description: questionnaire reference.
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          example: IndividualOnboardingForm
+      responses:
+        '200':
+          description: Questions And Answers List
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionsAndAnswersList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+  /party/{partyId}/dueDiligence/questionnaires/:             
+    get:
+      summary: Retrieves the questionnaires details for the party - the questionnaire reference, the declaration date and the general info
+      operationId: getListOfQuestionnaires
+      tags:
+       - Due Diligence
+      parameters:
+      - name: partyId
+        in: path
+        description: The unique identifier of the party. It can be automatically allocated
+          by the system or imposed by an external system through ingestion. Must be
+          unique within the microservice.
+        required: true
+        x-altkey: true
+        schema:
+          type: string
+          minLength: 1
+          example: 100100
+      responses:
+        '200':
+          description: country codes updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOfQuestionnaires'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"                
+components:
+  schemas:
+    QuestionsAndAnswersList:
+      type: object
+      properties:
+        generalInfo:
+          $ref: '#/components/schemas/GeneralInfo'
+        questionnaire:
+          $ref: '#/components/schemas/QuestionnairesForGet'
+    DueDiligenceQuestionsUpdate:
+      type: object
+      properties:
+        description:
+           type: string
+           example: Extractive Industry Activities description 
+           description: Question for ExtractiveIndustryActivities
+           maxLength: 500
+        allowedAnswerType:
+           type: string
+           example: Options
+           maxLength: 50
+           description: Identifies the type of the answer which can be given to the question<br>Allowed values<br>->Options – a list of one or multiple values which can be answered for the particular question<br>->FreeText – a text that can be supplied to the question<br>->Numeric – indicates the answer to the question is an Numeric(ex, Amount, No od records ., )<br>->Boolean- indicates the answer to the question is true and false <br>->Date- indicates the answer to the question is a date<br>->Currencies – specifies the answer is a currency or a list of currencies<br>->Countries - specifies the answer is a country or a list of countries
+           enum:
+           - Options
+           - FreeText
+           - Numeric
+           - Boolean
+           - Date
+           - Currencies
+           - Countries
+        allowedAnswerOptions:
+           type: array
+           description: Identifies the list of allowed options for the answer given to the question.Mandatory if the answerType is Options
+           items:
+             $ref: '#/components/schemas/AllowedAnswerOptionsDetails'
+        maxAllowedOptions:
+           type: integer
+           example: 2           
+           description: Identifies the maximum number of answer options which can be given for the question.Allowed only for the questions which have answerType as Options, Currencies, Countries
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the   questionnaires details by the Client or local implementations
+          additionalProperties: true
+    DueDiligenceQuestionsCreate:
+      type: object
+      properties:
+        description:
+           type: string
+           example: Extractive Industry Activities description 
+           description: Question for ExtractiveIndustryActivities
+           maxLength: 500
+        allowedAnswerType:
+           type: string
+           example: Options
+           maxLength: 50
+           description: Identifies the type of the answer which can be given to the question<br>Allowed values<br>->Options – a list of one or multiple values which can be answered for the particular question<br>->FreeText – a text that can be supplied to the question<br>->Numeric – indicates the answer to the question is an Numeric(ex, Amount, No od records ., )<br>->Boolean- indicates the answer to the question is true or false <br>->Date- indicates the answer to the question is a date<br>->Currencies – specifies the answer is a currency or a list of currencies<br>->Countries - specifies the answer is a country or a list of countries
+           enum:
+           - Options
+           - FreeText
+           - Numeric
+           - Boolean
+           - Date
+           - Currencies
+           - Countries
+        allowedAnswerOptions:
+           type: array
+           description: Identifies the list of allowed options for the answer given to the question.Mandatory if the answerType is Options
+           items:
+             $ref: '#/components/schemas/AllowedAnswerOptionsDetails'
+        maxAllowedOptions:
+           type: integer
+           example: 2           
+           description: Identifies the maximum number of answer options which can be given for the question.Allowed only for the questions which have answerType as Options, Currencies, Countries
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the   questionnaires details by the Client or local implementations
+          additionalProperties: true
+      required:
+        - allowedAnswerType
+    DueDiligenceQuestions:
+      type: object
+      properties:
+        questionReference:
+          type: string
+          example: ExtractiveIndustryActivities
+          maxLength: 50
+        description:
+           type: string
+           example: Extractive Industry Activities description 
+           description: Question for ExtractiveIndustryActivities
+           maxLength: 500
+        allowedAnswerType:
+           type: string
+           example: Options
+           maxLength: 50
+           description: Identifies the type of the answer which can be given to the question<br>Allowed values<br>->Options – a list of one or multiple values which can be answered for the particular question<br>->FreeText – a text that can be supplied to the question<br>->Numeric – indicates the answer to the question is an Numeric(ex, Amount, No od records ., )<br>->Boolean- indicates the answer to the question is true and false <br>->Date- indicates the answer to the question is a date<br>->Currencies – specifies the answer is a currency or a list of currencies<br>->Countries - specifies the answer is a country or a list of countries
+           enum:
+           - Options
+           - FreeText
+           - Numeric
+           - Boolean
+           - Date
+           - Currencies
+           - Countries  
+        allowedAnswerOptions:
+           type: array
+           description: Identifies the list of allowed options for the answer given to the question.Mandatory if the answerType is Options
+           items:
+             $ref: '#/components/schemas/AllowedAnswerOptionsDetailsGet'
+        maxAllowedOptions:
+           type: integer
+           example: 2           
+           description: Identifies the maximum number of answer options which can be given for the question.Allowed only for the questions which have answerType as Options, Currencies, Countries
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the   questionnaires details by the Client or local implementations
+          additionalProperties: true
+      required:
+        - allowedAnswerType
+    AllowedAnswerOptionsDetails:
+      properties:
+        code:
+          type: string
+          example: 1
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          example: Extractive Industry Activities 1
+          maxLength: 500
+      required:
+        - code
+    AllowedAnswerOptionsDetailsGet:
+      properties:
+        uniqueId:
+          type: string
+          example: AAO250104WLOH
+          description: The unique id automatically allocated by the system to each item in the allowedAnswerOptions collection
+          maxLength: 15
+        code:
+          type: string
+          example: 1
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          example: Extractive Industry Activities 1
+          maxLength: 500
+      required:
+        - code
+    CreateDueDiligenceQuestionsRequest:
+      properties:
+        dueDiligenceQuestion:
+          $ref: '#/components/schemas/DueDiligenceQuestionsCreate'
+      required:
+        - dueDiligenceQuestion
+    UpdateDueDiligenceQuestionsRequest:
+      properties:
+        dueDiligenceQuestion:
+          $ref: '#/components/schemas/DueDiligenceQuestionsUpdate'
+      required:
+        - dueDiligenceQuestion
+    DueDiligenceQuestionsResponse:
+      properties:
+        dueDiligenceQuestion:
+          $ref: '#/components/schemas/DueDiligenceQuestions'  
+    DueDiligenceQuestionsAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/DueDiligenceQuestions'
+    DueDiligenceQuestionsAllList:  
+      type: object
+      properties:              
+        dueDiligenceQuestions:
+          $ref: '#/components/schemas/DueDiligenceQuestionsAllItems'
+    ListOfQuestionnaires:
+      type: object
+      properties:
+        generalInfo:
+          $ref: '#/components/schemas/GeneralInfo'
+        questionnaires:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionnairesWithOutAnswers'        
+      required:
+        - generalInfo
+    QuestionnairesWithOutAnswers:
+      type: object
+      description: Questionnaires for the party.
+      properties:
+        uniqueId:
+          type: string
+          example: QA250104WLOH
+          description: The unique id automatically allocated by the system to each item in the questionnaires collection
+          maxLength: 15
+        questionnaireReference:
+          type: string
+          example: IndividualOnboardingForm
+          description: A reference allocated by the financial institution which identifies each questionnaire – e.g. CustomerOnboarding, AccountOpening, CanabisBusiness etc 
+        declarationDate:
+          type: string
+          format: date
+          example: '2022-02-28'
+          description: The date when the party filled the questionnaire
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the PartyRelationshipTypes details by the regional or local implementations
+          additionalProperties: true
+      required:
+        - questionReference         
+    CapturedueDiligenceRequest:
+      type: object
+      properties:
+        generalInfo:
+          $ref: '#/components/schemas/GeneralInfo'
+        questionnaires:
+          type: array
+          items:
+            $ref: '#/components/schemas/Questionnaires'        
+      required:
+        - generalInfo
+    AddQuestionnaireDueDiligenceRequest:
+      type: object
+      properties:
+        generalInfo:
+          $ref: '#/components/schemas/GeneralInfo'
+        questionnaires:
+          type: array
+          items:
+            $ref: '#/components/schemas/Questionnaires'        
+      required:
+        - generalInfo
+        - questionnaires
+    CapturedueDiligenceRequestForUpdates:
+      type: object
+      properties:
+        generalInfo:
+          $ref: '#/components/schemas/GeneralInfoForUpdates'
+        questionnaire:
+          $ref: '#/components/schemas/QuestionnairesForUpdates'        
+      required:
+        - generalInfo
+        - questionnaire
+    Questionnaires:
+      type: object
+      description: Questionnaires for the party.
+      properties: 
+        questionnaireReference:  
+          type: string
+          example: IndividualOnboardingForm
+          minLength: 1
+          description: A reference allocated by the financial institution which identifies each questionnaire – e.g. CustomerOnboarding, AccountOpening, CanabisBusiness etc
+          x-referencetype: questionnaireReference
+          x-link: GET  /reference/referenceTypes/{referenceTypeId}
+        declarationDate:
+          type: string
+          format: date
+          example: '2022-02-28'
+          description: The date when the party filled the questionnaire 
+        questionsAndAnswers:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionsAndAnswers'  
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the   questionnaires details by the Client or local implementations
+          additionalProperties: true
+      required:
+        - questionnaireReference
+    QuestionnairesForGet:
+      type: object
+      description: Questionnaires for the party.
+      properties: 
+        questionnaireReference:  
+          type: string
+          example: IndividualOnboardingForm
+          minLength: 1
+          description: A reference allocated by the financial institution which identifies each questionnaire – e.g. CustomerOnboarding, AccountOpening, CanabisBusiness etc
+          x-referencetype: questionnaireReference
+          x-link: GET  /reference/referenceTypes/{referenceTypeId}
+        uniqueId:
+          type: string
+          example: QA250104WLOH
+          description: The unique id automatically allocated by the system to each item in the questionnaires collection
+          maxLength: 15
+        declarationDate:
+          type: string
+          format: date
+          example: '2022-02-28'
+          description: The date when the party filled the questionnaire 
+        questionsAndAnswers:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionsAndAnswers'  
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the   questionnaires details by the Client or local implementations
+          additionalProperties: true
+      required:
+        - questionnaireReference
+    QuestionnairesForUpdates:
+      type: object
+      description: Questionnaires for the party..
+      properties: 
+        declarationDate:
+          type: string
+          format: date
+          example: '2022-02-28'
+          description: The date when the party filled the questionnaire 
+        questionsAndAnswers:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionsAndAnswers'  
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the   questionnaires details by the Client or local implementations
+          additionalProperties: true
+    QuestionsAndAnswers:
+      type: object
+      description: Questions And Answers
+      properties:
+        questionReference:
+          type: string
+          x-link: GET /reference/dueDiligence/questionDefinitions
+          example: ExtractiveIndustryActivities
+          description: A reference allocated by the financial institution which identifies the question answered by the party – e.q ExtractiveIndustryActivities
+        question:
+          type: string
+          example: Question for ExtractiveIndustryActivities
+          description: The text of the question that is being answered  by the party
+          maxLength: 250
+        answer:
+          $ref: '#/components/schemas/CddAnswerType'
+      required:
+        - answer
+    CddAnswerType:
+      type: object
+      description: The answer given to the question identified by the question reference or the question text If the questionReference is not supplied, the answer given is not validated. 
+      properties:
+        optionValues:
+          type: array
+          maxLength: 50
+          description: One or multiple options selected by the party for the question identified by the questionReference
+          items:
+            type: string
+          example: 
+          - "1"
+          - "2"
+        freeTextValue:
+          type: string
+          example: "1"
+          description: The answer given by the party
+          maxLength: 500
+        numericValue:
+          type: number
+          format: decimal
+          description: The Decimal answer given by the party
+          example: 100.34
+        booleanValue:
+          type: boolean
+          description: The boolean answer given by the party  
+          example: "true"
+        countryValues:
+           type: array
+           description: The answer given by the party
+           maxLength: 2
+           items:
+            type: string
+           example: 
+           - "IN"
+           - "US"
+        currencyValues:
+           type: array
+           description: The answer given by the party
+           maxLength: 3
+           items:
+            type: string
+           example: 
+           - "INR"
+           - "USD"
+        dateValue:
+          type: string
+          format: date
+          example: '2022-02-28'
+          description: The answer given by the party
+    GeneralInfo:
+      type: object
+      description: General details related to the party.
+      properties:
+        legalEntityId:
+          type: string
+          example: GB0010001
+          minLength: 1
+          maxLength: 11
+          description: The legal entity of of the party. Must be the legal entity id iof the party id in the Party entity
+        eventType:
+          type: string
+          example: EDD
+          description: The type of last due diligence event which has been assesed for the party
+          x-referencetype: dueDiligenceEventTypes
+          x-link: GET  /reference/referenceTypes/{referenceTypeId}
+        eventTrigger:
+          type: string
+          example: NewLendingContract
+          description: The trigger of the last due diligence event
+          x-referencetype: dueDiligenceEventTriggers
+          x-link: GET  /reference/referenceTypes/{referenceTypeId}
+        eventDate:
+          type: string
+          format: date
+          example: '2022-02-28'
+          description: The date when the due diligence was last updated for the party
+        updateSource:
+          type: string
+          example: RetailLendingSalesChannel
+          description: The source through which the last due diligence event has been updated
+          maxLength: 35
+        responsibleUnit:
+          type: string
+          description: The responsible unit which was responsible with the latest due diligence assessment of the party
+          example: ConsumerLending
+          x-link: GET /reference/organisationUnits/{organisationUnitCode}
+        responsibleOfficer:
+          type: string
+          description: The responsible officer which was responsible with the latest due diligence assessment of the party
+          example: ConsumerLending
+          x-referencetype: relationshipOfficer
+          x-link: GET /reference/referenceTypes/{referenceTypeId}          
+        approvalUnit:
+          type: string
+          description: The last business unit which approved the financial institution relationship with the party, in case the due diligence event implied that approval is required
+          example: ConsumerLending
+          x-link: GET /reference/organisationUnits 
+        approvalOfficer:
+          type: string
+          description: The  officer which approved the financial institution relationship with the party,  in case the due diligence event implied that approval is required
+          example: ConsumerLending
+          x-referencetype: relationshipOfficer
+          x-link: GET /reference/referenceTypes/{referenceTypeId}
+        approvalDate:
+          type: string
+          format: date
+          example: '2022-02-28'
+          description: The  date when the financial institution relationship with the party was approved,  in case the due diligence event implied that approval is required
+        businessKey:
+          type: string
+          example: 'PMS|GB0010001|100100'
+          description: Business key of the Party.
+          maxLength: 70
+        partyId:
+          type: string
+          example: '100100'
+          maxLength: 15
+          description: The unique identifier of the party. It can be automatically allocated by the system or imposed by an external system through ingestion. Must be unique within the microservice
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the PartyRelationshipTypes details by the regional or local implementations
+          additionalProperties: true    
+      required:
+        - legalEntityId
+        - eventDate
+    GeneralInfoForUpdates:
+      type: object
+      description: General details related to the party.
+      properties:
+        legalEntityId:
+          type: string
+          example: GB0010001
+          description: The legal entity of of the party. Must be the legal entity id iof the party id in the Party entity
+          maxLength: 11
+        eventType:
+          type: string
+          example: EDD
+          description: The type of last due diligence event which has been assesed for the party
+          x-referencetype: dueDiligenceEventTypes
+          x-link: GET  /reference/referenceTypes/{referenceTypeId}
+        eventTrigger:
+          type: string
+          example: NewLendingContract
+          description: The trigger of the last due diligence event
+          x-referencetype: dueDiligenceEventTriggers
+          x-link: GET  /reference/referenceTypes/{referenceTypeId}
+        eventDate:
+          type: string
+          format: date
+          example: '2022-02-28'
+          description: The date when the due diligence was last updated for the party
+        updateSource:
+          type: string
+          example: RetailLendingSalesChannel
+          description: The source through which the last due diligence event has been updated
+          maxLength: 35
+        responsibleUnit:
+          type: string
+          description: The responsible unit which was responsible with the latest due diligence assessment of the party
+          example: ConsumerLending
+          x-link: GET /reference/organisationUnits/{organisationUnitCode}
+        responsibleOfficer:
+          type: string
+          description: The responsible officer which was responsible with the latest due diligence assessment of the party
+          example: ConsumerLending
+          x-referencetype: relationshipOfficer
+          x-link: GET /reference/referenceTypes/{referenceTypeId}      
+        approvalUnit:
+          type: string
+          description: The last business unit which approved the financial institution relationship with the party, in case the due diligence event implied that approval is required
+          example: ConsumerLending
+          x-link: GET /reference/organisationUnits/{organisationUnitCode}
+        approvalOfficer:
+          type: string
+          description: The  officer which approved the financial institution relationship with the party,  in case the due diligence event implied that approval is required
+          example: ConsumerLending
+          x-referencetype: relationshipOfficer
+          x-link: GET /reference/relationshipOfficer  
+        approvalDate:
+          type: string
+          format: date
+          example: '2022-02-28'
+          description: The  date when the financial institution relationship with the party was approved,  in case the due diligence event implied that approval is required
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the PartyRelationshipTypes details by the regional or local implementations
+          additionalProperties: true
+    StandardCreateSuccessResponse:
+      properties:
+        id:
+          description: Unique identifier for the Entity
+          example: sourceOfIncome
+          type: string
+        status:
+          type: string
+          description: Specifies a custom code for success response
+          example: Success
+        message:
+          type: string
+          description: Specifies the text that provides more details
+          example: Record ID is created Successfully 
+    StandardUpdateSuccessResponse:
+      properties:
+        id:
+          description: "Unique identifier for the Entity"
+          example: "100100"
+          type: string
+        status:
+          type: string
+          description: "Specifies a custom code for success response"
+          example: "Success"
+        message:
+          type: string
+          description: "Specifies the text that provides more details"
+          example: "Record ID is updated Successfully for the Entity"     
+    StandardDeleteSuccessResponse:     
+      properties:
+        id:
+          description: "Unique identifier for the Entity"
+          example: "id"
+          type: string
+        status:
+          type: string
+          description: "Specifies a custom code for success response"
+          example: "Success"
+        message:
+          type: string
+          description: "Specifies the text that provides more details"
+          example: "Record  is deleted Successfully"
+    FailureMessage:
+      properties:        
+        message:
+          description: Summarized error message
+          type: string
+          example: Value for 'field' is invalid
+        code:
+          description: Unique code representing an error
+          type: string
+          example: INPUT_DATA_INVALID
+        source:
+          description: Source field of error
+          type: string
+          example: field
+    ErrorResponse403:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Illegal Access
+          example: Illegal Access
+        details:
+          type: string
+          description: Valid credentials but resource not allowed
+          example: Valid credentials but resource not allowed
+    ErrorResponse401:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Illegal Access
+          example: Illegal Access
+        details:
+          type: string
+          description: Invalid credentials in JWT
+          example: Invalid credentials in JWT
+    ErrorResponse400:
+      type: array
+      items:
+        $ref: "#/components/schemas/FailureMessage"  
+    ErrorResponse404:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Invalid Input
+          example: Invalid Input
+        details:
+          type: string
+          description: The requested resource does not exist
+          example: The requested resource does not exist
+    ErrorResponse422:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Invalid Input
+          example: Invalid Input
+        details:
+          type: string
+          description: Input is not processable due to semantics
+          example: Input is not processable due to semantics
+    ErrorResponse500:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Invalid Configuration
+          example: Invalid Configuration
+        details:
+          type: string
+          description: Service is not correctly configured
+          example: Service is not correctly configured       
+          

@@ -1,0 +1,2886 @@
+openapi: 3.0.0
+info:
+  title: Party Management APIs – Reference Data
+  description: Temenos Party Microservice provides a party register for financial entities and encompasses an extensive set of RESTful APIs that streamline the administration of the party data.Structured into four distinct Open API Specification documents, this specification handles the party specific reference data such as party classification codes, assessments types, relationship types as well as common reference data such as languages codes, country codes, currency codes, etc.
+
+  contact:
+    url: https://basecamp.temenos.com/s/topic/0TO2K0000005Pz4WAE/microservices
+  
+  version: 1.0.0
+servers:
+  - description: Example of valid server URL
+    url: http://localhost:8000/ms-party-api/api/v1.0.0
+    
+security:
+   - bearerAuth: []
+tags:
+
+- name: Country Codes
+  description: A set of ISO 3166-1 alpha-2 codes and their descriptions
+- name: Currency Codes
+  description: A set of ISO 4217  three-letter ("Alpha-3") currency codes and their descriptions
+- name: Language Codes
+  description: A set of ISO 639-1 two-letter language codes followed by '-' and ISO country code
+- name: Phone IDD Prefixes
+  description: A set of international prefix needed when dialing to a different country
+- name: Organisation Units
+  description: A set of organisation units within the financial entity organisation
+- name: Vulnerability Types
+  description: A set of vulnerbailities types that can be assigned to parties along with their nature/category  
+- name: Party Relationship Types
+  description: A set of relationships types that describe the nature of the relationship between two parties (e.g. Spouse, Subsidiary, etc), the corresponding reverse relationship and an indicator to specify if the relationship is hierarchical or flat
+- name: Party Classification Codes
+  description: A set of classification schemes along with the allowed codes that will be used to classify/describe the party.
+  
+paths:
+  /reference/countryCodes/{countryCode}:
+    post:
+      summary: Adds country codes and related country subdivisions
+      tags:
+       - Country Codes
+      operationId: addCountryCodes
+      parameters:
+        - name: countryCode
+          in: path
+          description: An ISO 3166-1 alpha-2 country code
+          required: true
+          schema:
+            type: string
+            example: US 
+            minLength: 2
+            maxLength: 2
+            pattern: '^[A-Z]{2}$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CountryCodesList'
+      responses:
+        '200':
+          description: country codes created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+
+    put:
+      summary: Updates the country code and the related country subdivisions
+      tags:
+       - Country Codes
+      operationId: updateCountryCodes
+      parameters:
+        - name: countryCode
+          in: path
+          description: An ISO 3166-1 alpha-2 country code 
+          required: true
+          schema:
+            type: string
+            example: US 
+            minLength: 2
+            maxLength: 2
+            pattern: '^[A-Z]{2}$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CountryCodesList'
+      responses:
+        '200':
+          description: country codes created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+                   
+    get:
+      summary: Retrieves a country code and the related country subdivisions
+      operationId: getCountryCodes
+      tags:
+       - Country Codes
+      parameters:
+        - name: countryCode
+          in: path
+          description: An ISO 3166-1 alpha-2 country code
+          required: true
+          schema:
+            type: string
+            example: US  
+            minLength: 2
+            maxLength: 2
+            pattern: '^[A-Z]{2}$'
+      responses:
+        '200':
+          description: country codes updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryCodesList'  
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+     
+    delete:
+      summary: Removes a country code and the related country subdivisions.
+      operationId: deleteCountryCodes
+      tags:
+       - Country Codes
+      parameters:
+        - name: countryCode
+          in: path
+          description: ISO 3166-1 alpha-2 country code 
+          required: true
+          schema:
+            type: string
+            example: US  
+            minLength: 2
+            maxLength: 2
+            pattern: '^[A-Z]{2}$'
+      responses:
+        '200':
+          description: country codes updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'   
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+                
+  /reference/countryCodes:             
+    get:
+      summary: Retrieves a country code and the related country subdivisions
+      operationId: getAllCountryCodes
+      tags:
+       - Country Codes
+      responses:
+        '200':
+          description: country codes updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryCodesAllList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+  /reference/countryCode/{countryCode}/countrySubDivisions:             
+    get:
+      summary: Retrieves all the countrySubDivisions for the countryCode
+      operationId: getCountrySubDivisions
+      tags:
+       - Country Codes
+      parameters:
+        - name: countryCode
+          in: path
+          description: ISO 3166-1 alpha-2 country code 
+          required: true
+          schema:
+            type: string
+            example: US  
+            minLength: 2
+            maxLength: 2
+            pattern: '^[A-Z]{2}$'
+      responses:
+        '200':
+          description: countrySubDivisions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/References'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"                   
+   
+  /reference/currencyCodes/{currencyCode}:
+    post:
+      summary: Adds currency codes
+      operationId: addCurrencyCodes
+      tags:
+        - Currency Codes
+      parameters:
+        - name: currencyCode
+          in: path
+          description: An ISO 4217 three alpha currency code
+          required: true
+          schema:
+            type: string
+            example: USD     
+            minLength: 3
+            maxLength: 3              
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrencyCodesList'
+      responses:
+        '200':
+          description: Currency codes added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    put:
+      summary: Updates currency codes
+      operationId: updateCurrencyCodes
+      tags:
+        - Currency Codes
+      parameters:
+        - name: currencyCode
+          in: path
+          description: An ISO 4217 three alpha currency code
+          required: true
+          schema:
+            type: string
+            example: USD
+            minLength: 3
+            maxLength: 3             
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrencyCodesList'
+      responses:
+        '200':
+          description: Currency codes updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    delete:
+      summary: Removes currency codes
+      operationId: deleteCurrencyCodes
+      tags:
+        - Currency Codes
+      parameters:
+        - name: currencyCode
+          in: path
+          description:  An ISO 4217 three alpha currency code
+          required: true
+          schema:
+            type: string
+            example: USD  
+            minLength: 3
+            maxLength: 3             
+      responses:
+        '200':
+          description: Currency code removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    get:
+      summary: Retrieves currency codes
+      operationId: getCurrencyCodes
+      tags:
+        - Currency Codes
+      parameters:
+        - name: currencyCode
+          in: path
+          description:  An ISO 4217 three alpha currency code
+          required: true
+          schema:
+            type: string
+            example: USD 
+            minLength: 3
+            maxLength: 3              
+            
+      responses:
+        '200':
+          description: Currency codes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyCodesList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+                
+  /reference/currencyCodes:              
+    get:
+      summary: Retrieves currency codes
+      operationId: getAllCurrencyCodes
+      tags:
+        - Currency Codes
+      responses:
+        '200':
+          description: Currency codes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyCodesAllList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"                
+
+  /reference/languageCodes/{languageLocale}:
+    post:
+      summary: Adds language codes
+      operationId: addLanguageCodes
+      tags:
+        - Language Codes
+      parameters:
+        - name: languageLocale
+          in: path
+          description: An ISO 639-1 two-letter language codes followed by '-' and ISO country code
+          required: true
+          schema:
+            type: string
+            example: en-GB 
+            minLength: 5
+            maxLength: 5             
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LanguageCodesList'
+      responses:
+        '200':
+          description: Language codes added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    put:
+      summary: Updates language codes
+      operationId: updateLanguageCodes
+      tags:
+        - Language Codes
+      parameters:
+        - name: languageLocale
+          in: path
+          description: An ISO 639-1 two-letter language codes followed by '-' and ISO country code
+          required: true
+          schema:
+            type: string
+            example: en-GB  
+            minLength: 5
+            maxLength: 5             
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LanguageCodesList'
+      responses:
+        '200':
+          description: Language codes updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    delete:
+      summary: Removes language codes
+      operationId: deleteLanguageCodes
+      tags:
+        - Language Codes
+      parameters:
+        - name: languageLocale
+          in: path
+          description: An ISO 639-1 two-letter language codes followed by '-' and ISO country code
+          required: true
+          schema:
+            type: string
+            example: en-GB   
+            minLength: 5
+            maxLength: 5             
+      responses:
+        '200':
+          description: Language code removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    get:
+      summary: Retrieves language codes
+      operationId: getLanguageCodes
+      tags:
+        - Language Codes
+      parameters:
+        - name: languageLocale
+          in: path
+          description: An ISO 639-1 two-letter language codes followed by '-' and ISO country code
+          required: true
+          schema:
+            type: string
+            example: en-GB    
+            minLength: 5
+            maxLength: 5             
+      responses:
+        '200':
+          description: Language codes retrieved successfully
+          content:
+            application/json:
+              schema:
+               $ref: '#/components/schemas/LanguageCodesList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+                
+  /reference/languageCodes:              
+    get:
+      summary: Retrieves language codes
+      operationId: getAllLanguageCodes
+      tags:
+        - Language Codes
+      responses:
+        '200':
+          description: Language codes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageCodesAllList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"                
+
+  /reference/iddPrefixCodes/{iddPrefixPhone}:
+    post:
+      summary: Adds phone idd prefix codes
+      operationId: addPhoneIddPrefixCodes
+      tags:
+        - Phone IDD Prefixes
+      parameters:
+        - name: iddPrefixPhone
+          in: path
+          description: The calling code for the country/region. Must be prefixed with "+"
+          required: true
+          schema:
+            type: string
+            example: "+44" 
+            minLength: 1
+            maxLength: 16             
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneIddPrefixCodesList'
+      responses:
+        '200':
+          description: Phone idd prefix codes added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    put:
+      summary: Updates phone idd prefix codes
+      operationId: updatePhoneIddPrefixCodes
+      tags:
+        - Phone IDD Prefixes
+      parameters:
+        - name: iddPrefixPhone
+          in: path
+          description: The calling code for the country/region. Must be prefixed with "+"
+          required: true
+          schema:
+            type: string
+            example: "+44" 
+            minLength: 1
+            maxLength: 16              
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneIddPrefixCodesList'
+      responses:
+        '200':
+          description: Phone idd prefix codes updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    delete:
+      summary: Removes phone idd prefix codes
+      operationId: deletePhoneIddPrefixCodes
+      tags:
+        - Phone IDD Prefixes
+      parameters:
+        - name: iddPrefixPhone
+          in: path
+          description: The calling code for the country/region. Must be prefixed with "+"
+          required: true
+          schema:
+            type: string
+            example: "+44" 
+            minLength: 1
+            maxLength: 16              
+      responses:
+        '200':
+          description: Phone idd prefix code removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    get:
+      summary: Retrieves phone idd prefix codes
+      operationId: getPhoneIddPrefixCodes
+      tags:
+        - Phone IDD Prefixes
+      parameters:
+        - name: iddPrefixPhone
+          in: path
+          description: The calling code for the country/region. Must be prefixed with "+"
+          required: true
+          schema:
+            type: string
+            example: "+44"   
+            minLength: 1
+            maxLength: 16              
+      responses:
+        '200':
+          description: Phone idd prefix codes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneIddPrefixCodesList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+                
+  /reference/iddPrefixCodes:             
+    get:
+      summary: Retrieves phone idd prefix codes
+      operationId: getAllPhoneIddPrefixCodes
+      tags:
+        - Phone IDD Prefixes
+      responses:
+        '200':
+          description: Phone idd prefix codes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneIddPrefixCodesAllList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"                
+
+  /reference/organisationUnits/{organisationUnitCode}:
+    post:
+      summary: Adds organisation units
+      operationId: addOrganisationUnits
+      tags:
+        - Organisation Units
+      parameters:
+        - name: organisationUnitCode
+          in: path
+          description: The identifier or code assigned to an  organisational unit within the financial entity
+          required: true
+          schema:
+            type: string
+            example: "LondonBranch123"
+            minLength: 1
+            maxLength: 70  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/OrganisationUnitsList'
+      responses:
+        '200':
+          description: Organisation units added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    put:
+      summary: Updates organisation units
+      operationId: updateOrganisationUnits
+      tags:
+        - Organisation Units
+      parameters:
+        - name: organisationUnitCode
+          in: path
+          description: The identifier or code assigned to an  organisational unit within the financial entity
+          required: true
+          schema:
+            type: string
+            example: "LondonBranch123"
+            minLength: 1
+            maxLength: 70               
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/OrganisationUnitsList'
+      responses:
+        '200':
+          description: Organisation units updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    delete:
+      summary: Removes organisation units
+      operationId: deleteOrganisationUnits
+      tags:
+        - Organisation Units
+      parameters:
+        - name: organisationUnitCode
+          in: path
+          description: The identifier or code assigned to an  organisational unit within the financial entity
+          required: true
+          schema:
+            type: string
+            example: "LondonBranch123"
+            minLength: 1
+            maxLength: 70               
+      responses:
+        '200':
+          description: Organisation units removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    get:
+      summary: Retrieves organisation units
+      operationId: getOrganisationUnits
+      tags:
+        - Organisation Units
+      parameters:
+        - name: organisationUnitCode
+          in: path
+          description: The identifier or code assigned to an  organisational unit within the financial entity
+          required: true
+          schema:
+            type: string
+            example: "LondonBranch123"
+            minLength: 1
+            maxLength: 70               
+      responses:
+        '200':
+          description: Organisation units retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationUnitsList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+                
+  /reference/organisationUnits:
+    get:
+      summary: Retrieves organisation units
+      operationId: getAllOrganisationUnits
+      tags:
+        - Organisation Units
+      responses:
+        '200':
+          description: Organisation units retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationUnitsAllList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+  /reference/partyRelationshipTypes/{relationshipType}:
+    post:
+      summary: Creates new relationship types
+      operationId: createPartyRelationshipTypes
+      tags:
+        - Party Relationship Types
+      parameters:
+        - name: relationshipType
+          in: path
+          description: Identifies the type of relationship of a party with another party
+          required: true
+          schema:
+            type: string
+            example: "HeadOffice"   
+            minLength: 1
+            maxLength: 70
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyRelationshipTypesList'
+      responses:
+        '200':
+          description: Relationship types added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    put:
+      summary: Updates relationship types
+      operationId: updatePartyRelationshipTypes
+      tags:
+        - Party Relationship Types
+      parameters:
+        - name: relationshipType
+          in: path
+          description: Identifies the type of relationship of a party with another party
+          required: true
+          schema:
+            type: string
+            example: "HeadOffice" 
+            minLength: 1
+            maxLength: 70            
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyRelationshipTypesItems'
+      responses:
+        '200':
+          description: Relationship types updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    delete:
+      summary: Removes relationship types
+      operationId: deletePartyRelationshipTypes
+      tags:
+        - Party Relationship Types
+      parameters:
+        - name: relationshipType
+          in: path
+          description: Identifies the type of relationship of a party with another party
+          required: true
+          schema:
+            type: string
+            example: "HeadOffice" 
+            minLength: 1
+            maxLength: 70            
+      responses:
+        '200':
+          description: Relationship types removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    get:
+      summary: Retrieves relationship types
+      operationId: getPartyRelationshipTypes
+      tags:
+        - Party Relationship Types
+      parameters:
+        - name: relationshipType
+          in: path
+          description: Identifies the type of relationship of a party with another party
+          required: true
+          schema:
+            type: string
+            example: "HeadOffice" 
+            minLength: 1
+            maxLength: 70            
+      responses:
+        '200':
+          description: Relationship types retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyRelationshipTypesResponseList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /reference/partyRelationshipTypes:              
+    get:
+      summary: Retrieves relationship types
+      operationId: getAllPartyRelationshipTypes
+      tags:
+        - Party Relationship Types
+      responses:
+        '200':
+          description: Relationship types retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyRelationshipTypesResponseAllList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"                
+  /reference/partyRelationshipTypes/{relationshipType}/additionalRelationshipTypes:
+    post:
+      summary: Adds relationship types
+      operationId: addPartyRelationshipTypes
+      tags:
+        - Party Relationship Types
+      parameters:
+        - name: relationshipType
+          in: path
+          description: Identifies the type of relationship of a party with another party
+          required: true
+          schema:
+            type: string
+            example: "HeadOffice"   
+            minLength: 1
+            maxLength: 70
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPartyRelationshipTypesList'
+      responses:
+        '200':
+          description: Relationship types added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /reference/partyClassificationCodes/{scheme}:
+    post:
+      summary: Adds classification codes
+      operationId: addClassificationCodes
+      tags:
+        - Party Classification Codes
+      parameters:
+        - name: scheme
+          in: path
+          description: Identifies the name of a classification scheme under which customers can be classified or segregated, e.g. industry codes
+          required: true
+          x-referencetype: classificationScheme
+          x-link: GET  /reference/referenceTypes/{referenceTypeId}
+          schema:
+            type: string
+            example: "SIC" 
+            minLength: 1
+            maxLength: 70            
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyClassificationsCodeList'
+      responses:
+        '200':
+          description: Classification codes added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    put:
+      summary: Updates classification codes
+      operationId: updateClassificationCodes
+      tags:
+        - Party Classification Codes
+      parameters:
+        - name: scheme
+          in: path
+          description: The classificationScheme
+          required: true
+          schema:
+            type: string
+            example: "SIC"  
+            minLength: 1
+            maxLength: 70             
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyClassificationsCodeList'
+      responses:
+        '200':
+          description: Classification codes updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+
+
+    get:
+      summary: Retrieves classification codes
+      operationId: getClassificationCodes
+      tags:
+        - Party Classification Codes
+      parameters:
+        - name: scheme
+          in: path
+          description: The classificationScheme
+          required: true
+          schema:
+            type: string
+            example: "SIC" 
+            minLength: 1
+            maxLength: 70             
+      responses:
+        '200':
+          description: Classification codes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyClassificationsCodeList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+                
+  /reference/partyClassificationCodes: 
+    delete:
+      summary: Removes classification codes
+      operationId: removeClassificationCodes
+      tags:
+        - Party Classification Codes
+      parameters:
+        - name: scheme
+          in: query
+          description: The classificationScheme
+          required: true
+          schema:
+            type: string
+            example: "SIC" 
+            minLength: 1
+            maxLength: 70  
+        - name: codes
+          in: query
+          description: The classification codes
+          required: false
+          schema:
+            type: array
+            items:
+             type: integer
+            example: "311" 
+            minLength: 1
+            maxLength: 140             
+      responses:
+        '200':
+          description: Classification codes removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"  
+    get:
+      summary: Retrieves classification codes
+      operationId: getAllClassificationCodes
+      tags:
+        - Party Classification Codes
+      responses:
+        '200':
+          description: Classification codes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyClassificationsCodeAllList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"                
+  /reference/partyClassificationCodes/{scheme}/classificationCodes:             
+    get:
+      summary: Retrieves all the classificationCode for the party classification code
+      operationId: getClassificationCodesForScheme
+      tags:
+       - Party Classification Codes
+      parameters:
+        - name: scheme
+          in: path
+          description: Party classficiation code 
+          required: true
+          schema:
+            type: string
+            example: SIC  
+
+      responses:
+        '200':
+          description: Classficiation code retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/References'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse404"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse422"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"      
+  /reference/vulnerabilityTypes/{type}:
+    post:
+      summary: Adds vulnerability types
+      operationId: addVulnerabilityTypes
+      tags:
+        - Vulnerability Types
+      parameters:
+        - name: type
+          in: path
+          description: The Vulnerability Type
+          required: true
+          schema:
+            type: string
+            example: "PoorOrNonExistentDigitalSkills"  
+            minLength: 1
+            maxLength: 70               
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityTypesList'
+      responses:
+        '200':
+          description: Vulnerability types added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    put:
+      summary: Updates vulnerability types
+      operationId: updateVulnerabilityTypes
+      tags:
+        - Vulnerability Types
+      parameters:
+        - name: type
+          in: path
+          description: The Vulnerability Types
+          required: true
+          schema:
+            type: string
+            example: "PoorOrNonExistentDigitalSkills" 
+            minLength: 1
+            maxLength: 70               
+            
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+             $ref: '#/components/schemas/VulnerabilityTypesList'
+
+      responses:
+        '200':
+          description: Vulnerability types updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    delete:
+      summary: Removes vulnerability types
+      operationId: removeVulnerabilityTypes
+      tags:
+        - Vulnerability Types
+      parameters:
+        - name: type
+          in: path
+          description: The Vulnerability Types
+          required: true
+          schema:
+            type: string
+            example: "PoorOrNonExistentDigitalSkills" 
+            minLength: 1
+            maxLength: 70               
+      responses:
+        '200':
+          description: Vulnerability types removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    get:
+      summary: Retrieves vulnerability types
+      operationId: getVulnerabilityTypes
+      tags:
+        - Vulnerability Types
+      parameters:
+        - name: type
+          in: path
+          description: The Vulnerability Types
+          required: true
+          schema:
+            type: string
+            example: "PoorOrNonExistentDigitalSkills"  
+            minLength: 1
+            maxLength: 70               
+      responses:
+        '200':
+          description: Vulnerability types retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityTypesList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+                
+  /reference/vulnerabilityTypes:              
+    get:
+      summary: Retrieves vulnerability types
+      operationId: getAllVulnerabilityTypes
+      tags:
+        - Vulnerability Types
+      responses:
+        '200':
+          description: Vulnerability types retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityTypeAllList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /reference/exitTypes/{exitType}:
+    post:
+      summary: Adds Exit type
+      operationId: createExitType
+      tags:
+        - Exit Types
+      parameters:
+        - name: exitType
+          in: path
+          description: Identifies the type of closure for a party role 
+          required: true
+          schema:
+            type: string
+            example: "Rejected"
+            minLength: 1
+            maxLength: 35
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: '#/components/schemas/ExitTypesList'
+      responses:
+        '200':
+          description: Exit types added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    put:
+      summary: Updates Exit type
+      operationId: updateExitType
+      tags:
+        - Exit Types
+      parameters:
+        - name: exitType
+          in: path
+          description: Identifies the type of closure for a party role 
+          required: true
+          schema:
+            type: string
+            example: "Rejected"
+            minLength: 1
+            maxLength: 35
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+             $ref: '#/components/schemas/ExitTypesUpdateList'
+
+      responses:
+        '200':
+          description: Exit types updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    delete:
+      summary: Removes Exit type
+      operationId: deleteExitType
+      tags:
+        - Exit Types
+      parameters:
+        - name: exitType
+          in: path
+          description: Identifies the type of closure for a party role 
+          required: true
+          schema:
+            type: string
+            example: "Rejected"
+            minLength: 1
+            maxLength: 35
+      responses:
+        '200':
+          description: Exit types removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+    get:
+      summary: Retrieves exit type record based on exitType
+      operationId: getExitType
+      tags:
+        - Exit Types
+      parameters:
+        - name: exitType
+          in: path
+          description: Identifies the type of closure for a party role 
+          required: true
+          schema:
+            type: string
+            example: "Rejected"
+            maxLength: 35
+            minLength: 1
+      responses:
+        '200':
+          description: Exit types retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExitTypesList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /reference/exitTypes:              
+    get:
+      summary: Retrieves all Exit types records
+      operationId: getAllExitTypes
+      tags:
+        - Exit Types
+      responses:
+        '200':
+          description: Exit types retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExitTypeAllList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /party/reference/referenceTypes/{referenceTypeId}:              
+    get:
+      summary: Retrieves all reference records for the provided referenceType
+      operationId: getReferenceRecords
+      tags:
+        - Reference
+      parameters:
+        - name: referenceTypeId
+          in: path
+          description: Identifies the type of reference record to be retrieved
+          required: true
+          schema:
+            type: string
+            example: "exitTypes"
+            maxLength: 35
+            minLength: 1
+      responses:
+        '200':
+          description: Records retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/References'
+
+  /reference/legalIdentifierTypes/{identifierType}:
+    post:
+      summary: Adds legalIdentifier types
+      operationId: addLegalIdentifierTypes
+      tags:
+        - Legal Identifier Types 
+      parameters:
+        - name: identifierType
+          in: path
+          description: The legalIdentifier Types 
+          required: true
+          schema:
+            type: string
+            example: "Passport"  
+            minLength: 1
+            maxLength: 70               
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: '#/components/schemas/LegalIdentifierTypesList'
+      responses:
+        '200':
+          description: Vulnerability types added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardCreateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    put:
+      summary: Updates legalIdentifier types
+      operationId: updateLegalIdentifierTypes
+      tags:
+        - Legal Identifier Types 
+      parameters:
+        - name: identifierType
+          in: path
+          description: The legalIdentifier Types
+          required: true
+          schema:
+            type: string
+            example: "Passport" 
+            minLength: 1
+            maxLength: 70               
+            
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+             $ref: '#/components/schemas/LegalIdentifierTypesList'
+
+      responses:
+        '200':
+          description: legalIdentifier types updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardUpdateSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    delete:
+      summary: Removes legalIdentifier types
+      operationId: removeLegalIdentifierTypes
+      tags:
+        - Legal Identifier Types 
+      parameters:
+        - name: identifierType
+          in: path
+          description: The legalIdentifier Types
+          required: true
+          schema:
+            type: string
+            example: "Passport" 
+            minLength: 1
+            maxLength: 70               
+      responses:
+        '200':
+          description: legalIdentifier types removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardDeleteSuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+
+    get:
+      summary: Retrieves legalIdentifier types
+      operationId: getLegalIdentifierTypes
+      tags:
+        - Legal Identifier Types 
+      parameters:
+        - name: identifierType
+          in: path
+          description: The legalIdentifier Types
+          required: true
+          schema:
+            type: string
+            example: "Passport"  
+            minLength: 1
+            maxLength: 70               
+      responses:
+        '200':
+          description: legalIdentifier types retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalIdentifierTypesList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+                
+  /reference/legalIdentifierTypes:              
+    get:
+      summary: Retrieves legalIdentifier types
+      operationId: getAllLegalIdentifierTypes
+      tags:
+        - Legal Identifier Types 
+      responses:
+        '200':
+          description: legalIdentifier types retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalIdentifierTypeAllList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+components:
+  schemas:
+
+# Country code schema structure 
+    CountrySubDivision:
+      type: object
+      properties:
+        code:
+          type: string
+          description: The code for the country subdivision
+          minLength: 1
+          maxLength: 35
+          example: "FL"
+        description:
+          type: string
+          description: The name of the country subdivision
+          minLength: 1
+          maxLength: 140
+          example: "Florida"        
+    CountryCodes:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The name of the country
+          minLength: 1
+          maxLength: 140
+          example: "United States of America"
+        countrySubdivisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CountrySubDivision'
+          description: List of country subdivisions codes
+        iddPrefixPhone:
+          type: string
+          description: The international direct dialing (IDD) prefix code
+          example: "+1"
+          x-referencetype: b-iddPrefixCodes"
+          x-link: GET  /party/reference/referenceTypes/{referenceTypeId}
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the CountryCodes details by the regional or local implementations
+          additionalProperties: true 
+      required:
+        - description
+    CountryCodesList:
+      type: object
+      properties:              
+        countryCodes:
+          $ref: '#/components/schemas/CountryCodes'
+      required:
+      - countryCodes
+    CountryCodesAll:
+      type: object
+      properties:
+        countryCode:
+          type: string
+          example: US
+          description: ISO 3166-1 alpha-2 country code 
+          
+      allOf:
+        - $ref: '#/components/schemas/CountryCodes' 
+    CountryCodesAllList:
+      type: object
+      properties:
+        countryCodes:        
+          $ref: '#/components/schemas/CountryCodesAllItems'  
+    CountryCodesAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/CountryCodesAll'   
+# Currency Codes schema structure        
+    CurrencyCodes:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The description of the currency
+          minLength: 1
+          maxLength: 140
+          example: "US Dollars"
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the CurrencyCodes details by the regional or local implementations.
+          additionalProperties: true   
+      required:
+        - description          
+    CurrencyCodesList:
+      type: object
+      properties:              
+        currencyCodes:
+          $ref: '#/components/schemas/CurrencyCodes'
+      required:
+      - currencyCodes
+    CurrencyCodesAll:
+      type: object
+      properties:
+        currencyCode:
+          type: string
+          description: An ISO 4217 three alpha currency code
+          example: "US"
+          minLength: 3
+          maxLength: 3         
+          
+      allOf:
+        - $ref: '#/components/schemas/CurrencyCodes'  
+    CurrencyCodesAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/CurrencyCodesAll'          
+    CurrencyCodesAllList:  
+      type: object
+      properties:              
+        currencyCodes:
+          $ref: '#/components/schemas/CurrencyCodesAllItems'             
+# Vulnerability Types schema structure          
+    VulnerabilityTypes:
+      type: object
+      properties:
+        description:
+          type: string
+          maxLength: 140
+          example : "Indicates the Poor or Non Existent Digital Skills of the party "
+        nature:
+          type: string
+          description: The nature of the vulnerability 
+          example: "Capability"
+          x-referencetype: vulnerabilityNature 
+          x-link: GET  /reference/referenceTypes/{referenceTypeId}
+          minLength: 1
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the VulnerabilityTypes details by the regional or local implementations
+          additionalProperties: true            
+      required: 
+        - type
+        - nature
+    VulnerabilityTypesList:  
+      type: object
+      properties:              
+        vulnerabilityTypes:
+          $ref: '#/components/schemas/VulnerabilityTypes'  
+      required: 
+      - vulnerabilityTypes
+    VulnerabilityTypeAll:
+      type: object
+      properties:
+        type:
+          type: string
+          description: A vulnerability type
+          example: "PoorOrNonExistentDigitalSkills"      
+          
+      allOf:
+        - $ref: '#/components/schemas/VulnerabilityTypes'    
+    VulnerabilityTypeAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/VulnerabilityTypeAll'      
+    VulnerabilityTypeAllList:   
+      type: object
+      properties:              
+        vulnerabilityTypes:
+          $ref: '#/components/schemas/VulnerabilityTypeAllItems'    
+# Organisation Units schema structure          
+    OrganisationUnits:        
+      type: object
+      properties:
+        type:
+          type: string
+          description:  The type of the organisation unit
+          example: "Branch"
+          x-referencetype: organisationUnitType 
+          x-link: GET  /reference/referenceTypes/{referenceTypeId}
+          minLength: 1
+        name:
+          type: string
+          description: The name of the organisation unit
+          minLength: 1
+          maxLength: 140
+          example: "London Branch 123"  
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the OrganisationUnits details by the regional or local implementations
+          additionalProperties: true             
+      required: 
+        - type
+        - name
+    OrganisationUnitsList:
+      type: object
+      properties:              
+        organisationUnits:
+          $ref: '#/components/schemas/OrganisationUnits'              
+      required: 
+      - organisationUnits
+    OrganisationUnitsAll:        
+      type: object
+      properties:
+        organisationUnitCode:
+          type: string
+          description: The identifier or code assigned to an  organisational unit within the financial entity
+          example: "Branch"      
+          
+      allOf:
+        - $ref: '#/components/schemas/OrganisationUnits'     
+    OrganisationUnitsAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/OrganisationUnitsAll'          
+    OrganisationUnitsAllList:  
+      type: object
+      properties:              
+        organisationUnits:
+          $ref: '#/components/schemas/OrganisationUnitsAllItems'                     
+# Language Codes schema structure          
+    LanguageCodes:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The ISO 639-1 language name
+          minLength: 1
+          maxLength: 140
+          example: "English - United Kingdom"
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the LanguageCodes details by the regional or local implementations.
+          additionalProperties: true  
+      required:
+        - description          
+    LanguageCodesList:
+      type: object
+      properties:              
+        languageCodes:
+          $ref: '#/components/schemas/LanguageCodes'                  
+      required:
+      - languageCodes
+    LanguageCodesAll:
+      type: object
+      properties: 
+        languageLocale:
+          type: string
+          description: The ISO 639-1  two-letter code followed by  the '-' and ISO country code
+          example: "en-GB" 
+      allOf:
+        - $ref: '#/components/schemas/LanguageCodes'   
+    LanguageCodesAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/LanguageCodesAll'          
+    LanguageCodesAllList:  
+      type: object
+      properties:              
+        languageCodes:
+          $ref: '#/components/schemas/LanguageCodesAllItems'                     
+# PhoneIddPrefix Codes schema structure          
+    PhoneIddPrefixCodes:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The description of the international dialing prefix 
+          minLength: 1
+          maxLength: 140
+          example: "The calling code for the country United Kingdom"
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the  PhoneIddPrefixCodes details by the regional or local implementatios.
+          additionalProperties: true       
+      required:
+        - description  
+    PhoneIddPrefixCodesList:
+      type: object
+      properties:              
+        phoneIddPrefixCodes:
+          $ref: '#/components/schemas/PhoneIddPrefixCodes'          
+      required:
+      - phoneIddPrefixCodes
+    PhoneIddPrefixCodesAll:
+      type: object
+      properties:
+        iddPrefixPhone:
+          type: string
+          description: The calling code for the country . Must be prefixed with "+" 
+          example: "+44"
+          
+      allOf:
+        - $ref: '#/components/schemas/PhoneIddPrefixCodes'                   
+    PhoneIddPrefixCodesAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/PhoneIddPrefixCodesAll'          
+    PhoneIddPrefixCodesAllList:  
+      type: object
+      properties:              
+        phoneIddPrefixCodes:
+          $ref: '#/components/schemas/PhoneIddPrefixCodesAllItems'                             
+
+# Legal Identifier Types schema structure          
+    LegalIdentifierTypes:
+      type: object
+      properties:
+        description:
+          type: string
+          maxLength: 140
+          example : "Indicates the Legal Identifier Types "
+        externalUse:
+          type: string
+          description: The description of the Legal Identifier Types 
+          example: "Y"
+ 
+        isoSchemeCode:
+          type: string
+          description: The isoSchemeCode of the Legal Identifier Types 
+          example: "CCP"
+        isoSchemeProprietary:
+          type: string
+          description: The isoSchemeProprietary of the Legal Identifier Types 
+          example: "CCPassport"
+         
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the VulnerabilityTypes details by the regional or local implementations
+          additionalProperties: true            
+
+    LegalIdentifierTypesList:  
+      type: object
+      properties:              
+        legalIdentifierTypes:
+          $ref: '#/components/schemas/LegalIdentifierTypes'  
+      required: 
+      - vulnerabilityTypes
+    LegalIdentifierTypeAll:
+      type: object
+      properties:
+        identifierType:
+          type: string
+          description: A vulnerability type
+          example: "PoorOrNonExistentDigitalSkills"      
+      allOf:
+        - $ref: '#/components/schemas/LegalIdentifierTypes'    
+    LegalIdentifierTypeAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/LegalIdentifierTypeAll'      
+    LegalIdentifierTypeAllList:   
+      type: object
+      properties:              
+        legalIdentifierTypes:
+          $ref: '#/components/schemas/LegalIdentifierTypeAllItems'    
+
+
+
+# Party Classifications Code schema structure 
+    ClassificationCode:
+      type: object
+      properties:
+        code:
+          type: string
+          description: A code allowed under the respective scheme
+
+          example: 0311
+        description:
+          type: string
+          description: Description of the code  
+          minLength: 1
+          maxLength: 140
+          example: Marine Fishing 
+      required:
+        - code
+        - description  
+        
+    PartyClassificationsCode:
+      type: object
+      properties:
+        description:
+          type: string
+          example: Standard Industry codes
+          description: The description of the  scheme
+          minLength: 1
+          maxLength: 140
+        classificationCodes:
+          description: The list of classification codes & descriptions available under the classification scheme
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassificationCode'
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the 'PartyClassificationsCode' details by the regional or local implementations
+          additionalProperties: true  
+      required:
+        - description
+        
+    PartyClassificationsCodeList:
+      type: object
+      properties:              
+        partyClassificationsCodes:
+          $ref: '#/components/schemas/PartyClassificationsCode'
+      required:
+      - partyClassificationsCodes
+    PartyClassificationsCodeAll:
+      type: object
+      properties:
+        scheme:
+          type: string
+          example: SIC 
+          description: Identifies the name of a classification scheme under which customers can be classified or segregated, e.g. industry codes.
+          x-referencetype: classificationScheme
+          x-link: GET  /reference/referenceTypes/{referenceTypeId}      
+          
+      allOf:
+        - $ref: '#/components/schemas/PartyClassificationsCode'             
+    PartyClassificationsCodeAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/PartyClassificationsCodeAll'          
+    PartyClassificationsCodeAllList:  
+      type: object
+      properties:              
+        partyClassificationsCodes:
+          $ref: '#/components/schemas/PartyClassificationsCodeAllItems'                   
+    ReverseRelationshipTypes:
+      type: object
+      properties:
+        relationshipType:
+          type: string
+          description: Identifies the type of relationship of a party with another party
+          example: "HeadOffice"  
+          minLength: 1
+          maxLength: 70
+        description:
+          type: string
+          description: The description of the relationship between two parties
+          minLength: 1
+          maxLength: 140
+          example: "Head Office of"
+        hierarchyType:
+          type: string
+          description: Identifies if the relationships is hierarchical or flat; allowed values are Parent, Child, Other.
+          enum:
+            - Parent
+            - Child  
+            - Other
+          example: "Parent" 
+        allowedPartyType:
+           type: string
+           description: Indicates if the type of relationship applies to individuals, organisations or both
+           enum:
+            - Organisation
+            - Individual  
+            - Both
+           example: "Organisation"
+        allowsOwnershipPercentage:
+            type: boolean
+            description: Specifies if the relationship type allows an ownerships percentage
+            example: true
+        natureTypes: 
+            type: array        
+            description: One or more classifications of the relationship type
+            x-referencetype: relationshipNature
+            x-link: GET  /reference/referenceTypes/{referenceTypeId}
+            items:
+             type: string
+             description: The nature of relationship Type
+             example: "Legal"         
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the PartyRelationshipTypes details by the regional or local implementations
+          additionalProperties: true
+      required: 
+        - relationshipType
+    PartyRelationshipTypes:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The description of the relationship between two parties
+          minLength: 1
+          maxLength: 140
+          example: "Head Office of"
+        hierarchyType:
+          type: string
+          description: Identifies if the relationships is hierarchical or flat; allowed values are Parent, Child, Other.
+          enum:
+            - Parent
+            - Child  
+            - Other
+          example: "Parent" 
+        allowedPartyType:
+           type: string
+           description: Indicates if the type of relationship applies to individuals, organisations or both
+           enum:
+            - Organisation
+            - Individual  
+            - Both
+           example: "Organisation"
+        allowsOwnershipPercentage:
+            type: boolean
+            description: Specifies if the relationship type allows an ownerships percentage
+            example: true
+        natureTypes: 
+            type: array        
+            description: One or more classifications of the relationship type
+            x-referencetype: relationshipNature
+            x-link: GET  /reference/referenceTypes/{referenceTypeId}
+            items:
+             type: string
+             description: The nature of relationship Type
+             example: "Legal"
+        reverseRelationshipTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReverseRelationshipTypes'  
+          description: The reverse relationship type
+          minLength: 1
+          maxLength: 70   
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the PartyRelationshipTypes details by the regional or local implementations
+          additionalProperties: true
+      required: 
+        - hierarchyType
+        - description
+        - reverseRelationshipTypes
+    UpdatePartyRelationshipTypes:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The description of the relationship between two parties
+          minLength: 1
+          maxLength: 140
+          example: "Head Office of"
+        allowedPartyType:
+           type: string
+           description: Indicates if the type of relationship applies to individuals, organisations or both
+           enum:
+            - Organisation
+            - Individual  
+            - Both
+           example: "Organisation"
+        natureTypes: 
+            type: array        
+            description: One or more classifications of the relationship type
+            x-referencetype: relationshipNature
+            x-link: GET  /reference/referenceTypes/{referenceTypeId}
+            items:
+             type: string
+             description: The nature of relationship Type
+             example: "Legal"         
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the PartyRelationshipTypes details by the regional or local implementations
+          additionalProperties: true
+    AddPartyRelationshipTypes:
+      type: object
+      properties:
+        relationshipType:
+          type: string
+          description: Identifies the type of relationship of a party with another party
+          example: "HeadOffice"  
+          minLength: 1
+          maxLength: 70
+        description:
+          type: string
+          description: The description of the relationship between two parties
+          minLength: 1
+          maxLength: 140
+          example: "Head Office of"
+        allowedPartyType:
+           type: string
+           description: Indicates if the type of relationship applies to individuals, organisations or both
+           enum:
+            - Organisation
+            - Individual  
+            - Both
+           example: "Organisation"
+        allowsOwnershipPercentage:
+            type: boolean
+            description: Specifies if the relationship type allows an ownerships percentage
+            example: true
+        natureTypes: 
+            type: array        
+            description: One or more classifications of the relationship type
+            x-referencetype: relationshipNature
+            x-link: GET  /reference/referenceTypes/{referenceTypeId}
+            items:
+             type: string
+             description: The nature of relationship Type
+             example: "Legal"  
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the PartyRelationshipTypes details by the regional or local implementations
+          additionalProperties: true
+      required: 
+        - description
+        - relationshipType
+    PartyRelationshipTypesResponse:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The description of the relationship between two parties
+          minLength: 1
+          maxLength: 140
+          example: "Head Office of"
+        hierarchyType:
+          type: string
+          description: Identifies if the relationships is hierarchical or flat; allowed values are Parent, Child, Other.
+          enum:
+            - Parent
+            - Child  
+            - Other
+          example: "Parent" 
+        allowedPartyType:
+           type: string
+           description: Indicates if the type of relationship applies to individuals, organisations or both
+           enum:
+            - Organisation
+            - Individual  
+            - Both
+           example: "Organisation"
+        allowsOwnershipPercentage:
+            type: boolean
+            description: Specifies if the relationship type allows an ownerships percentage
+            example: true
+        natureTypes: 
+            type: array        
+            description: One or more classifications of the relationship type
+            x-referencetype: relationshipNature
+            x-link: GET  /reference/referenceTypes/{referenceTypeId}
+            items:
+             type: string
+             description: The nature of relationship Type
+             example: "Legal"
+        reverseRelationshipTypes:
+          type: array  
+          description: The reverse relationship type
+          items:
+            type: string
+            description: The nature of relationship Type
+            example: "Branch"
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the PartyRelationshipTypes details by the regional or local implementations
+          additionalProperties: true
+    PartyRelationshipTypesList:
+      type: object
+      properties:              
+        partyRelationshipTypes:
+          $ref: '#/components/schemas/PartyRelationshipTypes'
+      required:
+      - partyRelationshipTypes
+    AddPartyRelationshipTypesList:
+      type: object
+      properties:              
+        partyRelationshipTypes:
+          $ref: '#/components/schemas/AddPartyRelationshipTypes'
+      required:
+      - partyRelationshipTypes
+    PartyRelationshipTypesItems:
+      type: object
+      properties:              
+        partyRelationshipTypes:
+          $ref: '#/components/schemas/UpdatePartyRelationshipTypes'            
+      required:
+      - partyRelationshipTypes     
+    PartyRelationshipTypesAll:
+      type: object
+      properties:
+        relationshipType:
+          type: string
+          description: Identifies the type of relationship of a party with another party
+          example: "HeadOffice"  
+          minLength: 1
+          maxLength: 70
+      allOf:
+        - $ref: '#/components/schemas/PartyRelationshipTypes'  
+    PartyRelationshipTypesAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/PartyRelationshipTypesAll'          
+    PartyRelationshipTypesAllList:  
+      type: object
+      properties:              
+        partyRelationshipTypes:
+          $ref: '#/components/schemas/PartyRelationshipTypesAllItems'                             
+    PartyRelationshipTypesResponseList:
+      type: object
+      properties:              
+        partyRelationshipTypes:
+          $ref: '#/components/schemas/PartyRelationshipTypesResponse'
+    PartyRelationshipTypesResponseAll:
+      type: object
+      properties:
+        relationshipType:
+          type: string
+          description: Identifies the type of relationship of a party with another party
+          example: "HeadOffice"  
+          minLength: 1
+          maxLength: 70
+      allOf:
+        - $ref: '#/components/schemas/PartyRelationshipTypesResponse'  
+    PartyRelationshipTypesResponseAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/PartyRelationshipTypesResponseAll'          
+    PartyRelationshipTypesResponseAllList:  
+      type: object
+      properties:              
+        partyRelationshipTypes:
+          $ref: '#/components/schemas/PartyRelationshipTypesResponseAllItems'
+        
+    StandardCreateSuccessResponse:
+      properties:
+        id:
+          description: "Unique identifier for the Entity"
+          example: "GB0010001-100100"
+          type: string
+        status:
+          type: string
+          description: "Specifies a custom code for success response"
+          example: "Success"
+        message:
+          type: string
+          description: "Specifies the text that provides more details"
+          example: "Record ID is created Successfully for the Party - Party ID"
+    StandardUpdateSuccessResponse:
+      properties:
+        id:
+          description: "Unique identifier for the Entity"
+          example: "GB0010001-100100"
+          type: string
+        status:
+          type: string
+          description: "Specifies a custom code for success response"
+          example: "Success"
+        message:
+          type: string
+          description: "Specifies the text that provides more details"
+          example: "Record ID is updated Successfully for the Party - Party ID"     
+    StandardDeleteSuccessResponse:     
+      properties:
+        id:
+          description: "Unique identifier for the Entity"
+          example: "GB0010001-100100"
+          type: string
+        status:
+          type: string
+          description: "Specifies a custom code for success response"
+          example: "Success"
+        message:
+          type: string
+          description: "Specifies the text that provides more details"
+          example: "Record ID is deleted Successfully for the Party - Party ID"         
+    FailureMessage:
+      properties:        
+        message:
+          description: Summarized error message
+          type: string
+          example: Value for 'field' is invalid
+        code:
+          description: Unique code representing an error
+          type: string
+          example: INPUT_DATA_INVALID
+        source:
+          description: Source field of error
+          type: string
+          example: field  
+    StandardErrorResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/FailureMessage"            
+    
+    ErrorResponse403:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Illegal Access
+          example: Illegal Access
+        details:
+          type: string
+          description: Valid credentials but resource not allowed
+          example: Valid credentials but resource not allowed
+    ErrorResponse401:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Illegal Access
+          example: Illegal Access
+        details:
+          type: string
+          description: Invalid credentials in JWT
+          example: Invalid credentials in JWT
+    ErrorResponse400:
+      type: array
+      items:
+        $ref: "#/components/schemas/FailureMessage"  
+    ErrorResponse404:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Invalid Input
+          example: Invalid Input
+        details:
+          type: string
+          description: The requested resource does not exist
+          example: The requested resource does not exist
+    ErrorResponse422:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Invalid Input
+          example: Invalid Input
+        details:
+          type: string
+          description: Input is not processable due to semantics
+          example: Input is not processable due to semantics
+    ErrorResponse500:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Invalid Configuration
+          example: Invalid Configuration
+        details:
+          type: string
+          description: Service is not correctly configured
+          example: Service is not correctly configured
+    Period:
+      type: object
+      properties:
+        period:
+          type: integer
+          example: 01
+          description: The number of retention units the data records to be retained. Either retentionDae or period to be provided mandatorily
+          minimum: 1
+        periodUnits:
+          type: string
+          enum:
+          - DAYS
+          - WEEKS
+          - MONTHS
+          - YEARS
+          description: The periodUnits are used to specify the unit of the period provided
+      required: 
+        - period
+        - periodUnits
+    PeriodForUpdate:
+      type: object
+      properties:
+        period:
+          type: integer
+          example: 01
+          description: The number of retention units the data records to be retained. Either retentionDae or period to be provided mandatorily
+          minimum: 1
+        periodUnits:
+          type: string
+          enum:
+          - DAYS
+          - WEEKS
+          - MONTHS
+          - YEARS
+          description: The periodUnits are used to specify the unit of the period provided
+    ExitTypes:
+      type: object
+      properties:
+        description:
+          type: string
+          example: Indicates the exitType as Rejected
+          maxLength: 140
+        allowedReasons:
+          type: array        
+          items:
+            type: string
+            description: Identifies the underlying possible reasons why the respective role was closed
+            example: "Legal"
+            maxLength: 35
+        allowedRole:
+          type: string
+          description: Indicates the role for which the exit type can be used
+          maxLength: 35
+          example: "Customer"
+        allowedStatus:
+          type: string
+          description: Identifies the party status for which the exit type is allowed
+          enum:
+          - Prospect
+          - Active
+        retentionPeriod:
+          $ref: '#/components/schemas/Period'
+        allowsRemoval:
+          type: boolean 
+          example: true
+          description: Indicates if the exit type can be removed  
+        lastContactPeriod:
+          $ref: '#/components/schemas/Period'
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the exitType details by the regional or local implementations
+          additionalProperties: true            
+      required: 
+        - allowedReasons
+        - allowedRole
+        - allowedStatus
+    ExitTypesUpdate:
+      type: object
+      properties:
+        description:
+          type: string
+          example: Indicates the exitType as Rejected
+          maxLength: 140
+        allowedReasons:
+          type: array        
+          items:
+            type: string
+            description: Identifies the underlying possible reasons why the respective role was closed
+            example: "Legal"
+            maxLength: 35
+        allowedRole:
+          type: string
+          description: Indicates the role for which the exit type can be used
+          maxLength: 35
+          example: "Customer"
+        allowedStatus:
+          type: string
+          description: Identifies the party status for which the exit type is allowed
+          enum:
+          - Prospect
+          - Active
+        retentionPeriod:
+          $ref: '#/components/schemas/PeriodForUpdate'
+        allowsRemoval:
+          type: boolean 
+          example: true
+          description: Indicates if the exit type can be removed  
+        lastContactPeriod:
+          $ref: '#/components/schemas/PeriodForUpdate'
+        extensionData:
+          type: object
+          example: {"customField": "value"}  
+          description: Specifies the additional attributes, which can be used to extend the exitType details by the regional or local implementations
+          additionalProperties: true
+    ExitTypesList:  
+      type: object
+      properties:              
+        exitTypes:
+          $ref: '#/components/schemas/ExitTypes'  
+      required: 
+      - exitTypes
+    ExitTypesUpdateList :
+      type: object
+      properties:              
+        exitTypes:
+          $ref: '#/components/schemas/ExitTypesUpdate'  
+      required: 
+      - exitTypes
+    ExitTypeAll:
+      type: object
+      properties:
+        exitType:
+          type: string
+          description: An exit type
+          example: "Rejected"
+      allOf:
+        - $ref: '#/components/schemas/ExitTypes'  
+    ExitTypeAllItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExitTypeAll'      
+    ExitTypeAllList:   
+      type: object
+      properties:              
+        exitTypes:
+          $ref: '#/components/schemas/ExitTypeAllItems'
+    Reference:
+      type: object
+      properties:
+        value:
+          type: string
+          description: id of the records retrieved for the referenceType
+          example: Rejected
+        description:
+          type: string
+          description: description of the records retrieved for the reference type
+          example: Indicates the exitType as Rejected
+    ReferencesList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Reference'
+    References:
+      type: object
+      properties:              
+        items:
+          $ref: '#/components/schemas/ReferencesList'
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      

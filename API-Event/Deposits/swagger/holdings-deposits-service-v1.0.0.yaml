@@ -1,0 +1,5171 @@
+openapi: 3.0.0
+info:
+  title: Deposits Module - Deposits
+  version: 1.0.0
+  description: >
+    Temenos exhibits modularity in its design approach by dividing the system into smaller, loosely coupled modules. The deposits modules of Retail Modular Banking is an independently deployable piece of software providing solution for specific business area namely retail deposits and retail accounts. This API can be used to create and manage accounts such as current, savings, using the Arrangement Architecture.
+
+servers:
+  - url: http://api.server.com/api/v1.0.0
+  - url: https://api.server.com/api/v1.0.0
+
+security:
+  - basicAuth: []
+  - apiKey: []
+
+tags:
+  - name: Account Maintenance
+  - name: Activity Reversals
+  - name: Deposit Information
+  - name: Deposit Interest
+  - name: Deposit Maintenance
+  - name: Deposit Migration
+  - name: Deposit Opening
+  - name: Deposit Parties
+  - name: Deposit Rollovers
+  - name: Deposit Services
+  - name: Deposit Statements
+  - name: Early Withdrawals
+  - name: Fund Blocking
+  - name: Payment Schedules
+  - name: Posting Restrictions
+  - name: Pricing Adjustments
+  - name: Settlement Instructions
+
+paths:
+
+  /holdings/activities/{activityReference}:
+    delete:
+      operationId: reversePostedActivity
+
+      tags:
+        - Activity Reversals
+
+      summary: Reverse an activity.
+      description: >
+        Reverse the specified activity on an account.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: activityReference
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Contains the unique reference id of the activity that will be reversed.
+          example: AAACT25105T3FKC472
+
+      responses:
+        '200':
+          description: reversePostedActivity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/migrations:
+    post:
+      operationId: accountTakeoverDeposits
+
+      x-event: deposits.takeover.depositCreated
+
+      tags:
+        - Deposit Migration
+
+      summary: Take over account details.
+      description: >
+        Take over account details from a legacy system by capturing and migrating the account details, such as the customers, product, and currency, and migrating them.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/accountTakeoverDepositsRequest"
+
+      responses:
+        '200':
+          description: accountTakeoverDeposits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/accountTakeoverDepositsResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/parties:
+    post:
+      operationId: addCustomerDeposits
+
+      x-event: deposits.updateParty.partyUpdated
+
+      tags:
+        - Deposit Parties
+
+      summary: Add customers to an existing Term Deposit account.
+      description: >
+        Add customers to the specified term deposit account by providing customer codes and roles to be added.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/addCustomerDepositsRequest"
+
+      responses:
+        '200':
+          description: addCustomerDeposits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/rollover:
+    post:
+      operationId: createManualRollover
+
+      x-event: deposits.updateCondition.conditionUpdated
+
+      tags:
+        - Deposit Rollovers
+
+      summary: Perform a manual rollover of a term deposit account.
+      description: >
+        Change and execute a rollover for a term deposit account. The rollover can be set to automatic or manual, and the product and term amount can also be modified.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createManualRolloverRequest"
+
+      responses:
+        '200':
+          description: createManualRollover
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/termDeposits:
+    post:
+      operationId: createTermDeposits
+
+      x-event: deposits.createDeposit.depositCreated
+
+      tags:
+        - Deposit Opening
+
+      summary: Create a term deposit.
+      description: >
+        Create a term deposit for a single customer or more than one customer (such as for a joint deposit). The deposit information, including term and deposit amount, can be input by the user at the time of deposit opening.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createTermDepositsRequest"
+
+      responses:
+        '200':
+          description: createTermDeposits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/createTermDepositsResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/termDeposits/simulation:
+    post:
+      operationId: createTermDepositsSimulation
+
+      tags:
+        - Deposit Opening
+
+      summary: New term deposit simulation.
+      description: >
+        Perform a term deposit opening simulation.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createTermDepositsSimulationRequest"
+
+      responses:
+        '200':
+          description: createTermDepositsSimulation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/createTermDepositsSimulationResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}:
+    get:
+      operationId: getTermDeposits
+
+      tags:
+        - Deposit Information
+
+      summary: Get the details of a term deposit account.
+      description: >
+        Returns a list of term deposit accounts with details such as currency, parties, balance, and maturity date.
+
+      parameters:
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_start'
+        - $ref: '#/components/parameters/page_token'
+        - $ref: '#/components/parameters/disablePagination'
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      responses:
+        '200':
+          description: getTermDeposits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getTermDepositsResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/activityHistory:
+    get:
+      operationId: getDepositActivityHistory
+
+      tags:
+        - Deposit Information
+
+      summary: Get deposit activity history
+      description: >
+        Returns the activity (transactions) history for the specified deposit account.
+
+      parameters:
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_start'
+        - $ref: '#/components/parameters/page_token'
+        - $ref: '#/components/parameters/disablePagination'
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      responses:
+        '200':
+          description: getDepositActivityHistory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getDepositActivityHistoryResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/balances:
+    get:
+      operationId: getTermDepositsInfo
+
+      tags:
+        - Deposit Information
+
+      summary: Get the balances of a term deposit.
+      description: >
+        Returns balance details for a specified term deposit, including information such as currency, balance, and accrued interest.
+
+      parameters:
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_start'
+        - $ref: '#/components/parameters/page_token'
+        - $ref: '#/components/parameters/disablePagination'
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      responses:
+        '200':
+          description: getTermDepositsInfo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getTermDepositsInfoResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/blockedFunds:
+    get:
+      operationId: getDepositsBlockFunds
+
+      tags:
+        - Fund Blocking
+
+      summary: Get the blocked funds details for a term deposit account.
+      description: >
+        Returns a list of active (and optionally expired) fund blocks with details such as the amount blocked, start date, and blocking reference.
+
+      parameters:
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_start'
+        - $ref: '#/components/parameters/page_token'
+        - $ref: '#/components/parameters/disablePagination'
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      responses:
+        '200':
+          description: getDepositsBlockFunds
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getDepositsBlockFundsResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/dormancyStatus:
+    put:
+      operationId: changeDepositDormancyStatus
+
+      x-event: deposits.changeDormancy.dormancyChanged
+
+      tags:
+        - Account Maintenance
+
+      summary: Change the dormancy status of a term deposit account.
+      description: >
+        Change the dormancy status of the specified term deposit account to ensure correct operational status.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/changeDepositDormancyStatusRequest"
+
+      responses:
+        '200':
+          description: changeDepositDormancyStatus
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/earlyWithdrawals:
+    post:
+      operationId: createEarlyWithdrawals
+
+      x-event: deposits.payout.transactionExecuted
+
+      tags:
+        - Early Withdrawals
+
+      summary: Early withdrawal from a term deposit account.
+      description: >
+        Create and perform early withdrawals on a term deposit account. Withdrawals can be either full or partial.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createEarlyWithdrawalsRequest"
+
+      responses:
+        '200':
+          description: createEarlyWithdrawals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/earlyWithdrawals/simulation:
+    post:
+      operationId: simulateEarlyWithdrawals
+
+      tags:
+        - Early Withdrawals
+
+      summary: Simulation of early withdrawal from a term deposit account.
+      description: >
+        Simulate early withdrawals on a term deposit account in order to see the impact on fees, benefits, and interest before performing the actual withdrawal.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/simulateEarlyWithdrawalsRequest"
+
+      responses:
+        '200':
+          description: simulateEarlyWithdrawals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/simulateEarlyWithdrawalsResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/interestAccruals:
+    get:
+      operationId: getInterestDetailsDeposits
+
+      tags:
+        - Deposit Interest
+
+      summary: Get the interest accruals of a term deposit account.
+      description: >
+        Returns interest accrual details for the current period of the specified term deposit account. The response includes the accrual period, currency, and an array of interest accrual information for different interest types.
+
+      parameters:
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_start'
+        - $ref: '#/components/parameters/page_token'
+        - $ref: '#/components/parameters/disablePagination'
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      responses:
+        '200':
+          description: getInterestDetailsDeposits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getInterestDetailsDepositsResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/migrations/balances:
+    put:
+      operationId: MigrateAccountBalancesDeposits
+
+      x-event: deposits.debitInactiveDeposit.balanceTransferred
+
+      tags:
+        - Deposit Migration
+
+      summary: Migrate term deposit account balances.
+      description: >
+        Migrate term deposit account balances from a legacy system by capturing the balance details of the specified account (such as balance type, due amount, etc.).
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MigrateAccountBalancesDepositsRequest"
+
+      responses:
+        '200':
+          description: MigrateAccountBalancesDeposits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/parties:
+    put:
+      operationId: changeCustomerDeposits
+
+      x-event: deposits.updateParty.partyUpdated
+
+      tags:
+        - Deposit Parties
+
+      summary: Change the customer(s) of a term deposit account.
+      description: >
+        Change the customers associated with the specified term deposit account by providing customer codes and roles.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/changeCustomerDepositsRequest"
+
+      responses:
+        '200':
+          description: changeCustomerDeposits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+    delete:
+      operationId: deleteCustomerDeposits
+
+      x-event: deposits.updateParty.partyUpdated
+
+      tags:
+        - Deposit Parties
+
+      summary: Delete customer(s) from a term deposit account.
+      description: >
+        Delete particular customers from the specified term deposit account by providing customer codes and roles to be removed.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/deleteCustomerDepositsRequest"
+
+      responses:
+        '200':
+          description: deleteCustomerDeposits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/paymentSchedule:
+    put:
+      operationId: changeDepositPaymentSchedule
+
+      x-event: deposits.updateSchedule.scheduleUpdated
+
+      tags:
+        - Payment Schedules
+
+      summary: Change the payment schedule of a term deposit account.
+      description: >
+        Change the payment schedule for a specified term deposit account by modifying the payment type, property, payment frequency, and/or start date.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/changeDepositPaymentScheduleRequest"
+
+      responses:
+        '200':
+          description: changeDepositPaymentSchedule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/pricingAdjustments:
+    put:
+      operationId: createSimplePricingAdjustments
+
+      x-event: deposits.updatePricingAdjustments.pricingAdjustmentsUpdated
+
+      tags:
+        - Pricing Adjustments
+
+      summary: Apply fee or interest rate adjustments to a term deposit account.
+      description: >
+        Adjust the pricing details for a term deposit account, including any fees, interest, or additional benefits.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createSimplePricingAdjustmentsRequest"
+
+      responses:
+        '200':
+          description: createSimplePricingAdjustments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/pricingAdjustments/advanced:
+    put:
+      operationId: UpdateAdvPricingAdjustment
+
+      x-event: deposits.updatePricingAdjustments.pricingAdjustmentsUpdated
+
+      tags:
+        - Pricing Adjustments
+
+      summary: Apply advanced fee and interest rate adjustments to a term deposit account.
+      description: >
+        An advanced API that allows more control for adjusting the pricing details for a term deposit account, including any fees, interest, or additional benefits.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAdvPricingAdjustmentRequest"
+
+      responses:
+        '200':
+          description: UpdateAdvPricingAdjustment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/restrictions:
+    delete:
+      operationId: unblockDepositPostingRestrictions
+
+      x-event: deposits.updateDeposit.depositUpdated
+
+      tags:
+        - Posting Restrictions
+
+      summary: Remove posting restrictions from a term deposit account.
+      description: >
+        Lift posting restrictions for a specified term deposit account using an unblocking code.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/unblockDepositPostingRestrictionsRequest"
+
+      responses:
+        '200':
+          description: unblockDepositPostingRestrictions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+    put:
+      operationId: updateDepositPostingRestrictions
+
+      x-event: deposits.updateDeposit.depositUpdated
+
+      tags:
+        - Posting Restrictions
+
+      summary: Add posting restrictions to a term deposit account.
+      description: >
+        Create posting restrictions for a specified term deposit account using a blocking code and start date.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateDepositPostingRestrictionsRequest"
+
+      responses:
+        '200':
+          description: updateDepositPostingRestrictions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/rolloverInstructions:
+    put:
+      operationId: changeRolloverInstructions
+
+      x-event: deposits.modifyTenor.tenorModified
+
+      tags:
+        - Deposit Rollovers
+
+      summary: Change the rollover instructions of a term deposit account.
+      description: >
+        Modify the rollover instructions for an existing term deposit account. The rollover can be set to automatic or manual, and the product can also be modified.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/changeRolloverInstructionsRequest"
+
+      responses:
+        '200':
+          description: changeRolloverInstructions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/schedules:
+    get:
+      operationId: getScheduleForDeposit
+
+      tags:
+        - Payment Schedules
+
+      summary: Get the payment schedule of a term deposit account.
+      description: >
+        Returns the list of payment schedules for a specified term deposit account, including details such as payment type, payment frequency, and start date.
+
+      parameters:
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_start'
+        - $ref: '#/components/parameters/page_token'
+        - $ref: '#/components/parameters/disablePagination'
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      responses:
+        '200':
+          description: getScheduleForDeposit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getScheduleForDepositResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/services:
+    put:
+      operationId: addServicesDeposits
+
+      x-event: deposits.updateDeposit.depositUpdated
+
+      tags:
+        - Deposit Services
+
+      summary: Add services to a term deposit account.
+      description: >
+        Add new services to a specified term deposit account, allowing customers or internal users to activate additional services (e.g., SMS alerts, overdraft facility, or online banking).
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/addServicesDepositsRequest"
+
+      responses:
+        '200':
+          description: addServicesDeposits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+    delete:
+      operationId: removeServicesDeposits
+
+      x-event: deposits.updateDeposit.depositUpdated
+
+      tags:
+        - Deposit Services
+
+      summary: Delete services from a term deposit account.
+      description: >
+        Delete specfiic services from a specified term deposit account, allowing customers or internal users to deactivate additional services (e.g., SMS alerts, overdraft facility, or online banking).
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/removeServicesDepositsRequest"
+
+      responses:
+        '200':
+          description: removeServicesDeposits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/settlementInstructions:
+    put:
+      operationId: createDepositSettlementInstructionsLite
+
+      x-event: deposits.updateSettlement.settlementUpdated
+
+      tags:
+        - Settlement Instructions
+
+      summary: Enable or disable automatic settlement of term deposit account amounts.
+      description: >
+        Enable or disable settlement instructions for a specified term deposit account.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createDepositSettlementInstructionsLiteRequest"
+
+      responses:
+        '200':
+          description: createDepositSettlementInstructionsLite
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/settlementInstructions/advanced:
+    put:
+      operationId: createDepositsSettlementInstructions
+
+      x-event: deposits.updateSettlement.settlementUpdated
+
+      tags:
+        - Settlement Instructions
+
+      summary: Change settlement instructions of a term deposit account.
+      description: >
+        Change settlement instructions for a specified term deposit account using advanced field options, which include payment type, settlement type, percentage, maximum amount, and activity.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createDepositsSettlementInstructionsRequest"
+
+      responses:
+        '200':
+          description: createDepositsSettlementInstructions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/settlementInstructions/default:
+    put:
+      operationId: createDepositSettlementInstructionsDefault
+
+      x-event: deposits.updateSettlement.settlementUpdated
+
+      tags:
+        - Settlement Instructions
+
+      summary: Change the default settlement instructions of a term deposit account.
+      description: >
+        Change default settlement instructions for a specified term deposit account by modifying either the default account id or default beneficiary id.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createDepositSettlementInstructionsDefaultRequest"
+
+      responses:
+        '200':
+          description: createDepositSettlementInstructionsDefault
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/statement:
+    get:
+      operationId: getDepositsStatement
+
+      tags:
+        - Deposit Statements
+
+      summary: Provides a list of transactions of a given term deposit account.
+      description: >
+        Returns a detailed transaction history for the specified term deposit account, including the opening and closing balances, transaction code and amount, and the booking date, amongst other information.
+
+      parameters:
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_start'
+        - $ref: '#/components/parameters/page_token'
+        - $ref: '#/components/parameters/disablePagination'
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      responses:
+        '200':
+          description: getDepositsStatement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getDepositsStatementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/statementFrequencies:
+    put:
+      operationId: updateDepositStatementFrequencies
+
+      x-event: deposits.updateStatement.statementUpdated
+
+      tags:
+        - Deposit Statements
+
+      summary: Change the statement frequency of a term deposit account.
+      description: >
+        API is used to update the statement frequency details for accounts (Monthly,Weekly,Quarterly,Daily,Annually).
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateDepositStatementFrequenciesRequest"
+
+      responses:
+        '200':
+          description: updateDepositStatementFrequencies
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/deposits/{accountId}/term:
+    put:
+      operationId: changeDepositTerm
+
+      x-event: deposits.modifyTenor.tenorModified
+
+      tags:
+        - Deposit Maintenance
+
+      summary: Change the term of a term deposit account.
+      description: >
+        Change the term length of an already existing term deposit account.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the account. For example - 123456.
+          example: 123456
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/changeDepositTermRequest"
+
+      responses:
+        '200':
+          description: changeDepositTerm
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArrangementResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/parties/{partyId}/deposits:
+    get:
+      operationId: getPartyDepositDetails
+
+      tags:
+        - Deposit Parties
+
+      summary: Get term deposit information for a specified party.
+      description: >
+        Returns a list of term deposit accounts associated with the specified party, along with details such as currency, deposit status, and balance for each term deposit.
+
+      parameters:
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_start'
+        - $ref: '#/components/parameters/page_token'
+        - $ref: '#/components/parameters/disablePagination'
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: partyId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique customer identifier used during account opening. Can represent multiple parties for joint accounts.
+          example: 189993
+
+      responses:
+        '200':
+          description: getPartyDepositDetails
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getPartyDepositDetailsResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/parties/{partyId}/deposits/relation:
+    get:
+      operationId: getCustomerAccountDetails
+
+      tags:
+        - Deposit Parties
+
+      summary: Get the term deposits of parties that are related to the term deposit owner.
+      description: >
+        Returns the accounts related to the specified party, along with the ownership and relation details.
+
+      parameters:
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_start'
+        - $ref: '#/components/parameters/page_token'
+        - $ref: '#/components/parameters/disablePagination'
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: partyId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Contains the unique customer identifier used in the account opening process.
+          example: 189993
+
+      responses:
+        '200':
+          description: getCustomerAccountDetails
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getCustomerAccountDetailsResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+components:
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    apiKey:
+      type: apiKey
+      name: Authorization
+      in: header
+
+  parameters:
+    page_size:
+      name: page_size
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: >
+        The total number of records per page.
+    page_start:
+      name: page_start
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: >
+        The record from which the response should be displayed.
+    page_token:
+      name: page_token
+      in: query
+      required: false
+      schema:
+        type: string
+      description: >
+        Unique id expected to be returned as part of the response from the system.
+    disablePagination:
+      name: disablePagination
+      in: header
+      required: false
+      schema:
+        type: boolean
+      description: >
+        Defines the availability of the pagination attributes in the header. If it is set to true, the system will fetch all the data without pagination.
+    validate_only:
+      name: validate_only
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: >
+        Indicates whether the request should be validated only (true) or executed (false).
+    credentials:
+      name: credentials
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Username and password to authenticate the API request in the system.
+    companyId:
+      name: companyId
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        The system supports multiple companies/entities within it. This tag defines the company code to which the new account will be created.
+    deviceId:
+      name: deviceId
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Identifies the device type.
+    userRole:
+      name: userRole
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        User who initiated the transaction.
+    channel:
+      name: channel
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Captures the origination or servicing channel through which the account or transaction was initiated, such as BRANCH or ONLINE.
+
+  schemas:
+
+    getPartyDepositDetailsResponse:
+      type: object
+      properties:
+        accounts:
+          type: array
+
+          description: >
+            Contains all of the accounts related to the specified party.
+
+          items:
+            type: object
+            properties:
+              accountBalance:
+                type: number
+
+                description: >
+                  Represents the real-time available balance of the account, showing accessible funds.
+
+                example: 1000.0
+
+              accountId:
+                type: string
+
+                description: >
+                  Unique identifier of the account. For example - 123456.
+
+                example: 123456
+
+              accountName:
+                type: string
+
+                description: >
+                  Defines the name of the account. For example, "MySavingsAccount" or "MyCurrentAccount".
+
+                example: MySavingsAccount
+
+              status:
+                type: string
+
+                description: >
+                  Indicates the funding status of the account (e.g., Current, Unauthorized or Fully funded, Partially funded, Not Funded).
+
+                example: CURRENT
+
+              branch:
+                type: string
+
+                description: >
+                  Defines the branch to which the account belongs.
+
+                example: 01123
+
+              channel:
+                type: string
+
+                description: >
+                  Captures the origination or servicing channel through which the account or transaction was initiated, such as BRANCH or ONLINE.
+
+                example: EMAIL
+
+              companyCode:
+                type: string
+
+                description: >
+                  Defines the company/entity to which the account is maintained.
+
+                example: GB0010001
+
+              contractDate:
+                type: string
+
+                description: >
+                  Defines the date on which the account was created. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              currency:
+                type: string
+
+                description: >
+                  Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+                example: USD
+
+              dormancyStatus:
+                type: string
+
+                description: >
+                  Specifies the operative status of the account (e.g., active, inactive, dormant, unclaimed).
+
+                example: CURRENT
+
+              dormancyStatusDate:
+                type: string
+
+                description: >
+                  Records the date when the account's dormancy status became effective or was last updated. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              lineOfBusiness:
+                type: string
+
+                description: >
+                  Specifies the banking line of business (e.g., RETAIL, CORPORATE) under which the account is managed.
+
+                example: 99
+
+              parties:
+                type: array
+
+                description: >
+                  Defines the parties of the account and their respective roles.
+
+                items:
+                  type: object
+                  properties:
+                    partyId:
+                      type: string
+
+                      description: >
+                        Unique customer identifier used during account opening. Can represent multiple parties for joint accounts.
+
+                      example: 189993
+
+                    partyRole:
+                      type: string
+
+                      description: >
+                        Defines the role of the party in the account.
+
+                      example: OWNER
+
+                    taxationPercent:
+                      type: string
+
+                      description: >
+                        Defines the corresponding percentage of the tax on interest.
+
+                      example: 10
+
+              partyId:
+                type: string
+
+                description: >
+                  Unique customer identifier used during account opening. Can represent multiple parties for joint accounts.
+
+                example: 189993
+
+              partyRole:
+                type: string
+
+                description: >
+                  Defines the role of the party in the account.
+
+                example: OWNER
+
+              productId:
+                type: string
+
+                description: >
+                  Contains the name of the product associated with the account (e.g., RegularCurrentAccount).
+
+                example: ConsumerLoan
+
+              productType:
+                type: string
+
+                description: >
+                  Contains the broader product group under which the account's product is categorized.
+
+                example: CurrentAccount
+
+              startDate:
+                type: string
+
+                description: >
+                  Defines the date on which the transaction, payment, or change gets initiated. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+    getCustomerAccountDetailsResponse:
+      type: object
+      properties:
+        accounts:
+          type: array
+
+          description: >
+            Contains all of the accounts related to the specified party.
+
+          items:
+            type: object
+            properties:
+              accountBalance:
+                type: number
+
+                description: >
+                  Represents the real-time available balance of the account, showing accessible funds.
+
+                example: 1000.0
+
+              accountId:
+                type: string
+
+                description: >
+                  Unique identifier of the account. For example - 123456.
+
+                example: 123456
+
+              accountName:
+                type: string
+
+                description: >
+                  Defines the name of the account. For example, "MySavingsAccount" or "MyCurrentAccount".
+
+                example: MySavingsAccount
+
+              status:
+                type: string
+
+                description: >
+                  Indicates the funding status of the account (e.g., Current, Unauthorized or Fully funded, Partially funded, Not Funded).
+
+                example: CURRENT
+
+              branch:
+                type: string
+
+                description: >
+                  Defines the branch to which the account belongs.
+
+                example: 01123
+
+              channel:
+                type: string
+
+                description: >
+                  Captures the origination or servicing channel through which the account or transaction was initiated, such as BRANCH or ONLINE.
+
+                example: EMAIL
+
+              companyCode:
+                type: string
+
+                description: >
+                  Defines the company/entity to which the account is maintained.
+
+                example: GB0010001
+
+              contractDate:
+                type: string
+
+                description: >
+                  Defines the date on which the account was created. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              currency:
+                type: string
+
+                description: >
+                  Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+                example: USD
+
+              dormancyStatus:
+                type: string
+
+                description: >
+                  Specifies the operative status of the account (e.g., active, inactive, dormant, unclaimed).
+
+                example: CURRENT
+
+              dormancyStatusDate:
+                type: string
+
+                description: >
+                  Records the date when the account's dormancy status became effective or was last updated. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              lineOfBusiness:
+                type: string
+
+                description: >
+                  Specifies the banking line of business (e.g., RETAIL, CORPORATE) under which the account is managed.
+
+                example: 99
+
+              parties:
+                type: array
+
+                description: >
+                  Defines the parties of the account and their respective roles.
+
+                items:
+                  type: object
+                  properties:
+                    partyId:
+                      type: string
+
+                      description: >
+                        Contains the unique customer identifier used in the account opening process.
+
+                      example: 189993
+
+                    partyRole:
+                      type: string
+
+                      description: >
+                        Defines the role of the party in the account.
+
+                      example: OWNER
+
+                    taxationPercent:
+                      type: string
+
+                      description: >
+                        Defines the corresponding percentage of the tax on interest.
+
+                      example: 10
+
+              partyId:
+                type: string
+
+                description: >
+                  Contains the unique customer identifier used in the account opening process.
+
+                example: 189993
+
+              partyRole:
+                type: string
+
+                description: >
+                  Defines the role of the party in the account.
+
+                example: OWNER
+
+              productId:
+                type: string
+
+                description: >
+                  Contains the name of the product associated with the account (e.g., RegularCurrentAccount).
+
+                example: ConsumerLoan
+
+              productType:
+                type: string
+
+                description: >
+                  Contains the broader product group under which the account's product is categorized.
+
+                example: CurrentAccount
+
+              startDate:
+                type: string
+
+                description: >
+                  Defines the date on which the transaction, payment, or change gets initiated. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+    createTermDepositsResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+
+          description: >
+            Unique identifier of the account. For example - 123456.
+
+          example: 123456
+
+    getTermDepositsResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+
+          description: >
+            Unique identifier of the account. For example - 123456.
+
+          example: 123456
+
+        accountName:
+          type: string
+
+          description: >
+            Defines the name of the account. For example, "MySavingsAccount" or "MyCurrentAccount".
+
+          example: MySavingsAccount
+
+        branch:
+          type: string
+
+          description: >
+            Defines the branch to which the account belongs.
+
+          example: 01123
+
+        channel:
+          type: string
+
+          description: >
+            Captures the origination or servicing channel through which the account or transaction was initiated, such as BRANCH or ONLINE.
+
+          example: EMAIL
+
+        companyCode:
+          type: string
+
+          description: >
+            Defines the company/entity to which the account is maintained.
+
+          example: GB0010001
+
+        contractDate:
+          type: string
+
+          description: >
+            Defines the date on which the account was created. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          example: USD
+
+        dormancyStatus:
+          type: string
+
+          description: >
+            Specifies the operative status of the account (e.g., active, inactive, dormant, unclaimed).
+
+          example: CURRENT
+
+        dormancyStatusDate:
+          type: string
+
+          description: >
+            Records the date when the account's dormancy status became effective or was last updated. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        lineOfBusiness:
+          type: string
+
+          description: >
+            Specifies the banking line of business (e.g., RETAIL, CORPORATE) under which the account is managed.
+
+          example: 99
+
+        maturityDate:
+          type: string
+
+          description: >
+            Defines the maturity date of the account. It is applicable to term deposit and lending products. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        parties:
+          type: array
+
+          description: >
+            Defines the parties of the account and their respective roles.
+
+          items:
+            type: object
+            properties:
+              partyId:
+                type: string
+
+                description: >
+                  The party identification number associated with the account.
+
+                example: 189993
+
+              partyRole:
+                type: string
+
+                description: >
+                  Defines the role of the party in the account.
+
+                example: OWNER
+
+              taxationPercent:
+                type: string
+
+                description: >
+                  Defines the corresponding percentage of the tax on interest.
+
+                example: 10
+
+        productId:
+          type: string
+
+          description: >
+            Contains the name of the product associated with the account (e.g., RegularCurrentAccount).
+
+          example: ConsumerLoan
+
+        startDate:
+          type: string
+
+          description: >
+            Defines the date on which the transaction, payment, or change gets initiated. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        status:
+          type: string
+
+          description: >
+            Indicates the funding status of the account (e.g., Current, Unauthorized or Fully funded, Partially funded, Not Funded).
+
+          example: CURRENT
+
+        term:
+          type: string
+
+          description: >
+            Defines the term of the account. It is applicable to term deposit and lending products.
+
+          example: 10M
+
+    getTermDepositsInfoResponse:
+      type: object
+      properties:
+        accountName:
+          type: string
+
+          description: >
+            Defines the name of the account. For example, "MySavingsAccount" or "MyCurrentAccount".
+
+          example: MySavingsAccount
+
+        accountReference:
+          type: string
+
+          description: >
+            Contains the unique alternate account identifier linked to referenceType, e.g., IBAN or legacy system.
+
+          example: QUOT246813
+
+        accruedInterest:
+          type: string
+
+          description: >
+            Reflects the total interest accrued on the deposit to date.
+
+          example: 1000
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          example: USD
+
+        depositBalance:
+          type: string
+
+          description: >
+            Reflects the principal amount currently held in the deposit arrangement.
+
+          example: 10000
+
+        productId:
+          type: string
+
+          description: >
+            Contains the name of the product associated with the account (e.g., RegularCurrentAccount).
+
+          example: ConsumerLoan
+
+    accountTakeoverDepositsResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+
+          description: >
+            Unique identifier of the account. For example - 123456.
+
+          example: 123456
+
+    createTermDepositsSimulationResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+
+          description: >
+            Unique identifier of the account. For example - 123456.
+
+          example: 123456
+
+        interest:
+          type: array
+
+          description: >
+            Contains the interest details, such as frequency and type of an account.
+
+          items:
+            type: object
+            properties:
+              interestRate:
+                type: number
+
+                description: >
+                  Defines the applied interest rate for the respective accrual date.
+
+                example: 4.0
+
+              interestRateDate:
+                type: string
+
+                description: >
+                  Defines the date at which the interest rate becomes effective.
+
+                example: 2025-04-14
+
+              interestType:
+                type: string
+
+                description: >
+                  Defines the type of interest that is applicable to the account.
+
+                example: CreditInterest
+
+              tierThreshold:
+                type: string
+
+                description: >
+                  Defines the tier threshold to which the interest rate corresponds.
+
+                example: 100
+
+              tierThresholdType:
+                type: string
+
+                description: >
+                  Defines if the tiers are configured as percentage of the balance or as balance amount.
+
+                example: balance amount
+
+              tierType:
+                type: string
+
+                description: >
+                  Defines the type of tiers defined, such as BAND or LEVEL.
+
+                example: BAND
+
+        paymentSchedule:
+          type: array
+
+          description: >
+            Contains the payment schedule details for an account, such as frequency and type.
+
+          items:
+            type: object
+            properties:
+              paymentFrequency:
+                type: string
+
+                description: >
+                  Indicates the recurrence interval at which payments are generated.
+
+                example: Monthly
+
+              paymentType:
+                type: string
+
+                description: >
+                  Indicates the type of payment defined in the payment schedule (e.g., interest, principal).
+
+                x-reference:  /reference?applicationId=AA.PAYMENT.TYPE
+
+                example: equatedPayments
+
+              property:
+                type: string
+
+                description: >
+                  Defines the property associated with the respective payment or balance type.
+
+                x-reference:  /reference?applicationId=AA.PROPERTY
+
+                example: DepositInterest
+
+              startDate:
+                type: string
+
+                description: >
+                  Defines the date on which the transaction, payment, or change gets initiated. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+        simulationReference:
+          type: string
+
+          description: >
+            Unique identifier of the simulation. For example - AASIM25105G946Y65X.
+
+          example: AASIM25105G946Y65X
+
+    simulateEarlyWithdrawalsResponse:
+      type: object
+      properties:
+        properties:
+          type: array
+
+          description: >
+            Contains the properties associated with the payment type.
+
+          items:
+            type: object
+            properties:
+              property:
+                type: string
+
+                description: >
+                  Defines the property associated with the respective payment or balance type.
+
+                x-reference:  /reference?applicationId=AA.PROPERTY
+
+                example: DepositInterest
+
+        simulationReference:
+          type: string
+
+          description: >
+            Unique identifier of the simulation. For example - AASIM25105G946Y65X.
+
+          example: AASIM25105G946Y65X
+
+        totalAmount:
+          type: number
+
+          description: >
+            Defines the principal amount that will be paid.
+
+          example: 1000.0
+
+    getDepositActivityHistoryResponse:
+      type: object
+      properties:
+        account:
+          type: string
+
+          description: >
+            Identifies the specific account in which funds are blocked, typically the account number.
+
+          example: 1013724489
+
+        accountName:
+          type: string
+
+          description: >
+            Defines the name of the account. For example, "MySavingsAccount" or "MyCurrentAccount".
+
+          example: MySavingsAccount
+
+        activities:
+          type: array
+
+          description: >
+            Provides the list of activity records or entries associated with the account.
+
+          items:
+            type: object
+            properties:
+              activityAmount:
+                type: number
+
+                description: >
+                  Captures the monetary value involved in a specific account activity.
+
+                example: 1000.0
+
+              activityDate:
+                type: string
+
+                description: >
+                  Captures the banking or booking date of an activity. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              activityReference:
+                type: string
+
+                description: >
+                  Contains the unique reference id generated for the activity that was performed.
+
+                example: AAACT25105T3FKC472
+
+              effectiveDate:
+                type: string
+
+                description: >
+                  Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              activityCode:
+                type: string
+
+                description: >
+                  Defines the code used to classify the type of activity performed on an arrangement.
+
+                example: DEPOSITS-SETTLE-AutoSettlement
+
+              activityName:
+                type: string
+
+                description: >
+                  Specifies the descriptive name of the activity performed on the arrangement.
+
+                example: Settle Settlement Parameter
+
+              activityStatus:
+                type: string
+
+                description: >
+                  Indicates the authorization or processing status of the activity.
+
+                example: AUTH
+
+              trigger:
+                type: string
+
+                description: >
+                  Specifies the source event that triggered the activity.
+
+                example: TRANSACTION
+
+              transactionInitiation:
+                type: string
+
+                description: >
+                  Defines if the transaction was initiated a USER or the BANK or AUTO initiated.
+
+                example: USER
+
+              relatedTransactionReference:
+                type: string
+
+                description: >
+                  Defines the transaction reference of the related transaction or activity, such as on secondary activities.
+
+                example: AAACT25114WJTOTM38
+
+        branch:
+          type: string
+
+          description: >
+            Defines the branch to which the account belongs.
+
+          example: 01123
+
+        channel:
+          type: string
+
+          description: >
+            Captures the origination or servicing channel through which the account or transaction was initiated, such as BRANCH or ONLINE.
+
+          example: EMAIL
+
+        companyCode:
+          type: string
+
+          description: >
+            Defines the company/entity to which the account is maintained.
+
+          example: GB0010001
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          example: USD
+
+        lineOfBusiness:
+          type: string
+
+          description: >
+            Specifies the banking line of business (e.g., RETAIL, CORPORATE) under which the account is managed.
+
+          example: 99
+
+        party:
+          type: string
+
+          description: >
+            The party reference associated with the account or activity.
+
+          example: 189993
+
+        partyRole:
+          type: string
+
+          description: >
+            Defines the role of the party in the account.
+
+          example: OWNER
+
+        product:
+          type: string
+
+          description: >
+            Defines the product code to which the account belongs.
+
+          example: RESCL
+
+    getDepositsStatementResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+
+          description: >
+            Unique identifier of the account. For example - 123456.
+
+          example: 123456
+
+        accountName:
+          type: string
+
+          description: >
+            Defines the name of the account. For example, "MySavingsAccount" or "MyCurrentAccount".
+
+          example: MySavingsAccount
+
+        closingBalance:
+          type: string
+
+          description: >
+            Reflects the closing balance of the account at the end date of the statement period.
+
+          example: 75000
+
+        companyCode:
+          type: string
+
+          description: >
+            Defines the company/entity to which the account is maintained.
+
+          example: GB0010001
+
+        contractDate:
+          type: string
+
+          description: >
+            Defines the date on which the account was created. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          example: USD
+
+        openingBalance:
+          type: string
+
+          description: >
+            Reflects the balance of the account prior to the start date of the statement period.
+
+          example: openingBalance
+
+        parties:
+          type: array
+
+          description: >
+            Defines the parties of the account and their respective roles.
+
+          items:
+            type: object
+            properties:
+              partyId:
+                type: string
+
+                description: >
+                  The party identification number associated with the account.
+
+                example: 189993
+
+              partyRole:
+                type: string
+
+                description: >
+                  Defines the role of the party in the account.
+
+                example: OWNER
+
+        product:
+          type: string
+
+          description: >
+            Defines the product code to which the account belongs.
+
+          example: RESCL
+
+        transactions:
+          type: array
+
+          description: >
+            Defines the transaction details of the account.
+
+          items:
+            type: object
+            properties:
+              acquirer:
+                type: string
+
+                description: >
+                  Identifies the acquiring institution or acquirer code linked to the transaction.
+
+                example: acquirer
+
+              bookingDate:
+                type: string
+
+                description: >
+                  Captures the official booking date of the transaction in the bank's records.
+
+                example: 2025-04-14
+
+              merchant:
+                type: string
+
+                description: >
+                  Defines the merchant code provided in the transaction, enabling transaction source identification.
+
+                example: 101
+
+              merchantCategoryCode:
+                type: string
+
+                description: >
+                  Defines the merchant category code (MCC) used to classify the merchant for the transaction.
+
+                example: ABC123
+
+              narrative:
+                type: string
+
+                description: >
+                  Contains an explanation of the changes that were made.
+
+                example: Lending account simulation
+
+              reference:
+                type: string
+
+                description: >
+                  Provides the transaction reference identifier for reconciliation and tracking.
+
+                example: QUOT246813
+
+              reversalIndicator:
+                type: string
+
+                description: >
+                  Indicates whether the transaction represents a reversal of a prior entry.
+
+                example: true
+
+              subAccountNumber:
+                type: string
+
+                description: >
+                  For multi-currency accounts, identifies the sub-account to which a transaction was posted.
+
+                example: 10124
+
+              transactionAmount:
+                type: string
+
+                description: >
+                  Specifies the transaction value in the stated currency. Negative values denote debits; positive values denote credits.
+
+                example: 10000
+
+              transactionCode:
+                type: string
+
+                description: >
+                  Defines the code used to classify and identify the transaction type.
+
+                example: ABC123
+
+              transactionDescription:
+                type: string
+
+                description: >
+                  Defines the descriptive text associated with the transaction code.
+
+                example: transactionDescription
+
+              valueDate:
+                type: string
+
+                description: >
+                  Specifies the value date on which the transaction amount becomes effective for interest or settlement purposes.
+
+                example: 2025-04-14
+
+    getInterestDetailsDepositsResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+
+          description: >
+            Unique identifier of the account. For example - 123456.
+
+          example: 123456
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          example: USD
+
+        interests:
+          type: array
+
+          description: >
+            Contains a list of interest accrual details for different interest types.
+
+          items:
+            type: object
+            properties:
+              accrualEndDate:
+                type: string
+
+                description: >
+                  Defines the date on which the interest accrual period ends. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              accrualStartDate:
+                type: string
+
+                description: >
+                  Defines the date on which the interest accrual period starts. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              accruals:
+                type: array
+
+                description: >
+                  Contains a detailed breakdown of daily or periodic accruals.
+
+                items:
+                  type: object
+                  properties:
+                    accrualAmount:
+                      type: number
+
+                      description: >
+                        Defines the interest amount accrued for that specific day or period.
+
+                      example: 1000.0
+
+                    accrualDate:
+                      type: string
+
+                      description: >
+                        Defines the date for which interest was accrued. The format of the date is yyyy-mm-dd.
+
+                      example: 2025-04-14
+
+                    accrualDays:
+                      type: integer
+
+                      description: >
+                        Defines the number of days for which the interest was accrued.
+
+                      example: 30
+
+                    balance:
+                      type: number
+
+                      description: >
+                        Defines the balance considered for interest calculation on the respective accrual date.
+
+                      example: 1000.0
+
+                    interestRate:
+                      type: number
+
+                      description: >
+                        Defines the applied interest rate for the respective accrual date.
+
+                      example: 4.0
+
+              accrualAmount:
+                type: number
+
+                description: >
+                  Defines the interest amount accrued for that specific day or period.
+
+                example: 1000.0
+
+              accrualDate:
+                type: string
+
+                description: >
+                  Defines the date for which interest was accrued. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              accrualDays:
+                type: integer
+
+                description: >
+                  Defines the number of days for which the interest was accrued.
+
+                example: 30
+
+              balance:
+                type: number
+
+                description: >
+                  Defines the balance considered for interest calculation on the respective accrual date.
+
+                example: 1000.0
+
+              interestRate:
+                type: number
+
+                description: >
+                  Defines the applied interest rate for the respective accrual date.
+
+                example: 4.0
+
+              interestDayBasis:
+                type: string
+
+                description: >
+                  Defines the basis for the interest rate (e.g., Actual/360).
+
+                example: interestDayBasis
+
+              interestType:
+                type: string
+
+                description: >
+                  Defines the type of interest that is applicable to the account.
+
+                example: CreditInterest
+
+              totalAccrualAmount:
+                type: number
+
+                description: >
+                  Defines the total interest amount accrued for the period.
+
+                example: 1000.0
+
+    getDepositsBlockFundsResponse:
+      type: object
+      properties:
+        account:
+          type: string
+
+          description: >
+            Identifies the specific account in which funds are blocked, typically the account number.
+
+          example: 1013724489
+
+        blockedFunds:
+          type: array
+
+          description: >
+            List of blocked fund entries for the account.
+
+          items:
+            type: object
+            properties:
+              amountBlocked:
+                type: number
+
+                description: >
+                  Denotes the portion of funds that are reserved, blocked, or placed on hold within the account, rendering them unavailable for customer use.
+
+                example: 1000.0
+
+              blockFundsKey:
+                type: string
+
+                description: >
+                  Provides the unique identifier assigned to a blocked fund entry.
+
+                example: BLC123
+
+              blockRemarks:
+                type: string
+
+                description: >
+                  Short description explaining why the funds are blocked.
+
+                example: clear the pending installments
+
+              blockingReference:
+                type: string
+
+                description: >
+                  Contains the unique reference id generated for the blocked funds activity that was performed.
+
+                example: QUOT246813
+
+              endDate:
+                type: string
+
+                description: >
+                  Defines the date on which the transaction, payment, or change ends. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              startDate:
+                type: string
+
+                description: >
+                  Defines the date on which the transaction, payment, or change gets initiated. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+        companyCode:
+          type: string
+
+          description: >
+            Defines the company/entity to which the account is maintained.
+
+          example: GB0010001
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          example: USD
+
+        productCode:
+          type: string
+
+          description: >
+            Contains the code of the product associated with the account (e.g., RegularCurrentAccount).
+
+          example: CurrentAccount
+
+    getScheduleForDepositResponse:
+      type: object
+      properties:
+        schedules:
+          type: array
+
+          description: >
+            List of payment schedule details for the account.
+
+          items:
+            type: object
+            properties:
+              paymentFrequency:
+                type: string
+
+                description: >
+                  Indicates the recurrence interval at which payments are generated.
+
+                example: Monthly
+
+              paymentType:
+                type: string
+
+                description: >
+                  Indicates the type of payment defined in the payment schedule (e.g., interest, principal).
+
+                example: equatedPayments
+
+              properties:
+                type: array
+
+                description: >
+                  Contains the properties associated with the payment type.
+
+                items:
+                  type: object
+                  properties:
+                    property:
+                      type: string
+
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+
+                      example: DepositInterest
+
+              property:
+                type: string
+
+                description: >
+                  Defines the property associated with the respective payment or balance type.
+
+                example: DepositInterest
+
+              startDate:
+                type: string
+
+                description: >
+                  Defines the date on which the transaction, payment, or change gets initiated. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+    ArrangementResponse:
+      type: object
+      description: ArrangementResponse
+      properties:
+        activityReference:
+          type: string
+
+          description: >
+            Contains the unique reference id generated for the activity that was performed.
+
+          example: AAACT25105T3FKC472
+
+    AccountResponse:
+      type: object
+      description: AccountResponse
+      properties:
+        accountReference:
+          type: string
+
+          description: >
+            Contains the unique alternate account identifier linked to referenceType, e.g., IBAN or legacy system.
+
+          example: QUOT246813
+
+    deleteCustomerDepositsRequest:
+      type: object
+      properties:
+        parties:
+          type: array
+          items:
+            type: object
+            properties:
+              partyId:
+                type: string
+
+                description: >
+                  The party identification number associated with the account.
+
+                example: 189993
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+      required:
+        - parties
+    changeCustomerDepositsRequest:
+      type: object
+      properties:
+        parties:
+          type: array
+          items:
+            type: object
+            properties:
+              partyId:
+                type: string
+
+                description: >
+                  The party identification number associated with the account.
+
+                example: 189993
+
+              partyRole:
+                type: string
+
+                description: >
+                  Defines the role of the party in the account.
+
+                x-reference:  /reference?applicationId=CUSTOMER.ROLE
+
+                example: OWNER
+
+              taxationPercent:
+                type: string
+
+                description: >
+                  Defines the corresponding percentage of the tax on interest.
+
+                example: 10
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+      required:
+        - parties
+    addCustomerDepositsRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+
+          description: >
+            Unique identifier of the account. For example - 123456.
+
+          example: 123456
+
+        parties:
+          type: array
+          items:
+            type: object
+            properties:
+              partyId:
+                type: string
+
+                description: >
+                  The party identification number associated with the account.
+
+                example: 189993
+
+              partyRole:
+                type: string
+
+                description: >
+                  Defines the role of the party in the account.
+
+                x-reference:  /reference?applicationId=CUSTOMER.ROLE
+
+                example: OWNER
+
+              taxationPercent:
+                type: string
+
+                description: >
+                  Defines the corresponding percentage of the tax on interest.
+
+                example: 10
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+      required:
+        - accountId
+        - parties
+    createTermDepositsRequest:
+      type: object
+      x-conditional: >
+        x-conditional: The field 'interestPayoutFrequency' is not allowed unless 'interestPayoutOption' is set to 'Settle at Scheduled Frequency' or 'Capitalise at Scheduled Frequency'.
+      properties:
+        parties:
+          type: array
+          items:
+            type: object
+            properties:
+              partyId:
+                type: string
+
+                description: >
+                  The party identification number associated with the account.
+
+                example: 189993
+
+              partyRole:
+                type: string
+
+                description: >
+                  Defines the role of the party in the account.
+
+                x-reference:  /reference?applicationId=CUSTOMER.ROLE
+
+                example: OWNER
+
+        accountReferences:
+          type: array
+          items:
+            type: object
+            properties:
+              referenceType:
+                type: string
+
+                description: >
+                  Defines the type of alternate reference used for the account, such as IBAN, LEGACY, or system-specific identifiers.
+
+                example: IBAN
+
+              accountReference:
+                type: string
+
+                description: >
+                  Contains the unique alternate account identifier linked to referenceType, e.g., IBAN or legacy system.
+
+                example: QUOT246813
+
+        accountName:
+          type: string
+
+          description: >
+            Defines the name of the account. For example, "MySavingsAccount" or "MyCurrentAccount".
+
+          example: MySavingsAccount
+
+        openingDate:
+          type: string
+
+          description: >
+            Defines the date of the account opening. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        productId:
+          type: string
+
+          description: >
+            Contains the name of the product associated with the account (e.g., RegularCurrentAccount).
+
+          example: ConsumerLoan
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          x-reference:  /reference?applicationId=CURRENCY.PARAM
+
+          example: USD
+
+        branch:
+          type: string
+
+          description: >
+            Defines the branch to which the account belongs.
+
+          x-reference:  /reference?applicationId=ST.BRANCH
+
+          example: 01123
+
+        quotationReference:
+          type: string
+
+          description: >
+            Reference from the origination or simulation system used to open the account.
+
+          example: QUOT246813
+
+        depositAmount:
+          type: number
+
+          description: >
+            Principal amount for which the deposit account is opened.
+
+          example: 1000.0
+
+        depositTerm:
+          type: string
+
+          description: >
+            Duration of the deposit in D/W/M/Y format to indicate days, weeks, months and years. For example, 7D, 2W, or 1M.
+
+          example: 7D
+
+        interestPayoutOption:
+          type: string
+
+          description: >
+            Defines how the interest must be paid to the customer.
+
+          example: Settle at Maturity/Rollover
+
+          enum:
+            - Settle at Maturity/Rollover
+            - Capitalise at Rollover
+            - Settle at Scheduled Frequency
+            - Capitalise at Scheduled Frequency
+
+        interestPayoutFrequency:
+          type: string
+
+          description: >
+            Defines the frequency at which the interest payments will be made.
+
+          example: Quarterly
+
+          enum:
+            - Annually
+            - Monthly
+            - Quarterly
+            - Semi-Annually
+
+        fundingAccount:
+          type: string
+
+          description: >
+            Defines the account from which funds are debited to create the deposit.
+
+          example: 10142
+
+        payoutAccount:
+          type: string
+
+          description: >
+            Defines the account designated to receive the deposit proceeds, including principal and interest.
+
+          example: 10014
+
+        externalDetails:
+          type: object
+
+          description: >
+            An object containing the company reference and system reference that are used to define and identify an external account id.
+
+          items:
+            type: object
+            properties:
+              companyReference:
+                type: string
+
+                description: >
+                  Defines the company code to which the external account belongs.
+
+                example: GB0010001
+
+              systemReference:
+                type: string
+
+                description: >
+                  Defines the system to which the external account belongs.
+
+                example: lending
+
+      required:
+        - parties
+        - productId
+        - currency
+        - depositAmount
+        - depositTerm
+    changeDepositTermRequest:
+      type: object
+      properties:
+        depositTerm:
+          type: string
+
+          description: >
+            Duration of the deposit in D/W/M/Y format to indicate days, weeks, months and years. For example, 7D, 2W, or 1M.
+
+          example: 7D
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+          maxLength: 255
+      required:
+        - depositTerm
+    accountTakeoverDepositsRequest:
+      type: object
+      properties:
+        parties:
+          type: array
+          items:
+            type: object
+            properties:
+              partyId:
+                type: string
+
+                description: >
+                  The party identification number associated with the account.
+
+                example: 189993
+
+              partyRole:
+                type: string
+
+                description: >
+                  Defines the role of the party in the account.
+
+                x-reference:  /reference?applicationId=CUSTOMER.ROLE
+
+                example: OWNER
+
+        accountReferences:
+          type: array
+          items:
+            type: object
+            properties:
+              referenceType:
+                type: string
+
+                description: >
+                  Defines the type of alternate reference used for the account, such as IBAN, LEGACY, or system-specific identifiers.
+
+                example: IBAN
+
+              accountReference:
+                type: string
+
+                description: >
+                  Contains the unique alternate account identifier linked to referenceType, e.g., IBAN or legacy system.
+
+                example: QUOT246813
+
+        accountName:
+          type: string
+
+          description: >
+            Defines the name of the account. For example, "MySavingsAccount" or "MyCurrentAccount".
+
+          example: MySavingsAccount
+
+        openingDate:
+          type: string
+
+          description: >
+            Defines the date of the account opening. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        originalContractDate:
+          type: string
+
+          description: >
+            Defines the date on which the account was originally created. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        productId:
+          type: string
+
+          description: >
+            Contains the name of the product associated with the account (e.g., RegularCurrentAccount).
+
+          example: ConsumerLoan
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          x-reference:  /reference?applicationId=CURRENCY.PARAM
+
+          example: USD
+
+        branch:
+          type: string
+
+          description: >
+            Defines the branch to which the account belongs.
+
+          x-reference:  /reference?applicationId=ST.BRANCH
+
+          example: 01123
+
+        quotationReference:
+          type: string
+
+          description: >
+            Reference from the origination or simulation system used to open the account.
+
+          example: QUOT246813
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+        depositAmount:
+          type: number
+
+          description: >
+            Principal amount for which the deposit account is opened.
+
+          example: 1000.0
+
+        depositTerm:
+          type: string
+
+          description: >
+            Duration of the deposit in D/W/M/Y format to indicate days, weeks, months and years. For example, 7D, 2W, or 1M.
+
+          example: 7D
+
+        interestPayoutOption:
+          type: string
+
+          description: >
+            Defines how the interest must be paid to the customer.
+
+          example: Settle at Maturity/Rollover
+
+          enum:
+            - Settle at Maturity/Rollover
+            - Capitalise at Rollover
+            - Settle at Scheduled Frequency
+            - Capitalise at Scheduled Frequency
+
+        interestPayoutFrequency:
+          type: string
+
+          description: >
+            Defines the frequency at which the interest payments will be made.
+
+          example: Quarterly
+
+          enum:
+            - Annually
+            - Monthly
+            - Quarterly
+            - Semi-Annually
+
+        fundingAccount:
+          type: string
+
+          description: >
+            Defines the account from which funds are debited to create the deposit.
+
+          example: 10142
+
+        payoutAccount:
+          type: string
+
+          description: >
+            Defines the account designated to receive the deposit proceeds, including principal and interest.
+
+          example: 10014
+
+      required:
+        - parties
+        - originalContractDate
+        - productId
+        - currency
+        - depositAmount
+        - depositTerm
+    MigrateAccountBalancesDepositsRequest:
+      type: object
+      properties:
+        balances:
+          type: array
+          items:
+            type: object
+            properties:
+              balanceType:
+                type: string
+
+                description: >
+                  Indicates the type of balance displayed.
+
+                x-reference:  /reference?applicationId=AC.BALANCE.TYPE
+
+                example: CURPRINCIPAL
+
+              property:
+                type: string
+
+                description: >
+                  Defines the property associated with the respective payment or balance type.
+
+                x-reference:  /reference?applicationId=AA.PROPERTY
+
+                example: DepositInterest
+
+              balanceAmount:
+                type: number
+
+                description: >
+                  Specifies the amount associated with the respective balance type.
+
+                example: 1000.0
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+      required:
+        - balances
+        - effectiveDate
+    createTermDepositsSimulationRequest:
+      type: object
+      x-conditional: >
+        The field 'interestPayoutFrequency' is not allowed unless 'interestPayoutOption' is set to 'Settle at Scheduled Frequency' or 'Capitalise at Scheduled Frequency'.
+      properties:
+        parties:
+          type: array
+          items:
+            type: object
+            properties:
+              partyId:
+                type: string
+
+                description: >
+                  The party identification number associated with the account.
+
+                example: 189993
+
+              partyRole:
+                type: string
+
+                description: >
+                  Defines the role of the party in the account.
+
+                x-reference:  /reference?applicationId=CUSTOMER.ROLE
+
+                example: OWNER
+
+        accountReferences:
+          type: array
+          items:
+            type: object
+            properties:
+              referenceType:
+                type: string
+
+                description: >
+                  Defines the type of alternate reference used for the account, such as IBAN, LEGACY, or system-specific identifiers.
+
+                example: IBAN
+
+              accountReference:
+                type: string
+
+                description: >
+                  Contains the unique alternate account identifier linked to referenceType, e.g., IBAN or legacy system.
+
+                example: QUOT246813
+
+        accountName:
+          type: string
+
+          description: >
+            Defines the name of the account. For example, "MySavingsAccount" or "MyCurrentAccount".
+
+          example: MySavingsAccount
+
+        openingDate:
+          type: string
+
+          description: >
+            Defines the date of the account opening. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        productId:
+          type: string
+
+          description: >
+            Contains the name of the product associated with the account (e.g., RegularCurrentAccount).
+
+          example: ConsumerLoan
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          x-reference:  /reference?applicationId=CURRENCY.PARAM
+
+          example: USD
+
+        branch:
+          type: string
+
+          description: >
+            Defines the branch to which the account belongs.
+
+          x-reference:  /reference?applicationId=ST.BRANCH
+
+          example: 01123
+
+        lineOfBusiness:
+          type: string
+
+          description: >
+            Specifies the banking line of business (e.g., RETAIL, CORPORATE) under which the account is managed.
+
+          example: 99
+
+        channel:
+          type: string
+
+          description: >
+            Captures the origination or servicing channel through which the account or transaction was initiated, such as BRANCH or ONLINE.
+
+          x-reference:  /reference?applicationId=EB.CHANNEL
+
+          example: EMAIL
+
+        quotationReference:
+          type: string
+
+          description: >
+            Reference from the origination or simulation system used to open the account.
+
+          example: QUOT246813
+
+        depositAmount:
+          type: number
+
+          description: >
+            Principal amount for which the deposit account is opened.
+
+          example: 1000.0
+
+        depositTerm:
+          type: string
+
+          description: >
+            Duration of the deposit in D/W/M/Y format to indicate days, weeks, months and years. For example, 7D, 2W, or 1M.
+
+          example: 7D
+
+        interestPayoutOption:
+          type: string
+
+          description: >
+            Defines how the interest must be paid to the customer.
+
+          example: Settle at Maturity/Rollover
+
+          enum:
+            - Settle at Maturity/Rollover
+            - Capitalise at Rollover
+            - Settle at Scheduled Frequency
+            - Capitalise at Scheduled Frequency
+
+        interestPayoutFrequency:
+          type: string
+
+          description: >
+            Defines the frequency at which the interest payments will be made.
+
+          example: Quarterly
+
+          enum:
+            - Annually
+            - Monthly
+            - Quarterly
+            - Semi-Annually
+
+        fundingAccount:
+          type: string
+
+          description: >
+            Defines the account from which funds are debited to create the deposit.
+
+          example: 10142
+
+        payoutAccount:
+          type: string
+
+          description: >
+            Defines the account designated to receive the deposit proceeds, including principal and interest.
+
+          example: 10014
+
+      required:
+        - parties
+        - productId
+        - currency
+        - depositAmount
+        - depositTerm
+    simulateEarlyWithdrawalsRequest:
+      type: object
+      properties:
+        withdrawalType:
+          type: string
+
+          description: >
+            Defines whether an early withdrawal is full or partial.
+
+          example: Full
+
+          enum:
+            - Full
+            - Partial
+
+        withdrawalAmount:
+          type: number
+
+          description: >
+            Defines the amount withdrawn for a partial early withdrawal.
+
+          example: 1000.0
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          x-reference:  /reference?applicationId=CURRENCY.PARAM
+
+          example: USD
+
+      required:
+        - withdrawalType
+        - currency
+    changeRolloverInstructionsRequest:
+      type: object
+      x-conditional: >
+        The field 'rolloverOption' is required when autoRollover is 'Yes'. The field 'rolloverToProduct' is required when changeProduct is 'Yes'.
+      properties:
+        autoRollover:
+          type: string
+
+          description: >
+            Defines whether the rollover type is automatic (Yes) or manual (No).
+
+          example: Yes
+
+          enum:
+            - Yes
+            - No
+
+        rolloverOption:
+          type: string
+
+          description: >
+            Defines how the amount of the term deposit rollover is calculated.
+
+          example: Principal Only
+
+          enum:
+            - Principal and Interest
+            - Principal Only
+
+        changeProduct:
+          type: string
+
+          description: >
+            Defines whether to change the product.
+
+          example: Yes
+
+          enum:
+            - Yes
+            - No
+
+        rolloverToProduct:
+          type: string
+
+          description: >
+            Contains the name of the term deposit product to which the account will change at the rollover date (e.g., TermDepositWor).
+
+          example: TermDepositWor
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+          maxLength: 255
+      required:
+        - autoRollover
+    createManualRolloverRequest:
+      type: object
+      x-conditional: >
+        The field 'rolloverOption' is required when autoRollover is 'Yes'. The field 'rolloverToProduct' is required when changeProduct is 'Yes'.
+      properties:
+        accountId:
+          type: string
+
+          description: >
+            Unique identifier of the account. For example - 123456.
+
+          example: 123456
+
+        depositTerm:
+          type: string
+
+          description: >
+            Duration of the deposit in D/W/M/Y format to indicate days, weeks, months and years. For example, 7D, 2W, or 1M.
+
+          example: 7D
+
+        autoRollover:
+          type: string
+
+          description: >
+            Defines whether the rollover type is automatic (Yes) or manual (No).
+
+          example: Yes
+
+          enum:
+            - Yes
+            - No
+
+        rolloverOption:
+          type: string
+
+          description: >
+            Defines how the amount of the term deposit rollover is calculated.
+
+          example: Principal Only
+
+          enum:
+            - Principal and Interest
+            - Principal Only
+
+        changeProduct:
+          type: string
+
+          description: >
+            Defines whether to change the product.
+
+          example: Yes
+
+          enum:
+            - Yes
+            - No
+
+        rolloverToProduct:
+          type: string
+
+          description: >
+            Contains the name of the term deposit product to which the account will change at the rollover date (e.g., TermDepositWor).
+
+          example: TermDepositWor
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+          maxLength: 255
+      required:
+        - accountId
+        - depositTerm
+        - autoRollover
+    updateDepositStatementFrequenciesRequest:
+      type: object
+      properties:
+        newFrequency:
+          type: string
+
+          description: >
+            Defines the new statement frequency for the account.
+
+          example: Monthly
+
+          enum:
+            - Daily
+            - Weekly
+            - Monthly
+            - Quarterly
+            - Annually
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+      required:
+        - newFrequency
+    createSimplePricingAdjustmentsRequest:
+      type: object
+      properties:
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+        pricingAdjustment:
+          type: array
+          items:
+            type: object
+            properties:
+              adjustPricingName:
+                type: string
+
+                description: >
+                  Indicates the interest, charge and periodic charges attribute name which has to be adjusted with manual pricing.
+
+                example: PrinInterest
+
+              adjustType:
+                type: string
+
+                description: >
+                  Specifies how the pricing adjustment is applied.
+
+                example: ADJUST.RATE
+
+                enum:
+                  - ADJUST.AMOUNT
+                  - ADJUST.RATE
+                  - OVERRIDE.RATE
+                  - WAIVE
+                  - ADJUST.PERCENTAGE
+                  - OVERRIDE.AMOUNT
+
+              adjustValue:
+                type: number
+
+                description: >
+                  Numeric value representing the adjustment amount or percentage to be applied, depending on the adjustment type.
+
+                example: 0.5
+
+              adjustExpirydate:
+                type: string
+
+                description: >
+                  Date on which the pricing adjustment expires and is no longer applied.
+
+                example: 2025-04-14
+
+              adjustmentReason:
+                type: string
+
+                description: >
+                  Explanation for granting the pricing adjustment.
+
+                example: Valued Customer
+
+                enum:
+                  - Valued Customer
+                  - Retain Customers Business
+
+              expireOnTermChanges:
+                type: boolean
+
+                description: >
+                  Indicates whether the adjustment to be expired or retained during reset activities. Set the value to true if adjustment need to be expired or set the value to false if adjustment need to be retained
+
+                example: False
+
+      required:
+        - pricingAdjustment
+    UpdateAdvPricingAdjustmentRequest:
+      type: object
+      properties:
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+        pricingAdjustment:
+          type: array
+          items:
+            type: object
+            properties:
+              adjustPricingName:
+                type: string
+
+                description: >
+                  Indicates the interest, charge and periodic charges attribute name which has to be adjusted with manual pricing.
+
+                example: PrinInterest
+
+              adjustPricingClassName:
+                type: string
+
+                description: >
+                  Class name or category under which this pricing adjustment is grouped.
+
+                example: INTEREST
+
+              adjustValue:
+                type: number
+
+                description: >
+                  Numeric value representing the adjustment amount or percentage to be applied, depending on the adjustment type.
+
+                example: 0.5
+
+              adjustmentReason:
+                type: string
+
+                description: >
+                  Explanation for granting the pricing adjustment.
+
+                example: Valued Customer
+
+                enum:
+                  - Valued Customer
+                  - Retain Customers Business
+
+              adjustExpirydate:
+                type: string
+
+                description: >
+                  Date on which the pricing adjustment expires and is no longer applied.
+
+                example: 2025-04-14
+
+              expireOnTermChanges:
+                type: boolean
+
+                description: >
+                  Indicates whether the adjustment to be expired or retained during reset activities. Set the value to true if adjustment need to be expired or set the value to false if adjustment need to be retained
+
+                example: False
+
+              adjustType:
+                type: string
+
+                description: >
+                  Specifies how the pricing adjustment is applied.
+
+                example: ADJUST.RATE
+
+                enum:
+                  - ADJUST.AMOUNT
+                  - ADJUST.RATE
+                  - OVERRIDE.RATE
+                  - WAIVE
+                  - ADJUST.PERCENTAGE
+                  - OVERRIDE.AMOUNT
+
+              interestAdjustment:
+                type: array
+
+                description: >
+                  Identifiers representing interest adjustments enforced on the account.
+
+      required:
+        - pricingAdjustment
+    addServicesDepositsRequest:
+      type: object
+      properties:
+        services:
+          type: array
+          items:
+            type: object
+            properties:
+              serviceCode:
+                type: string
+
+                description: >
+                  Defines the service that will be modified for the account. Available values for this field can be retrieved from the /reference API from the static reference APIs for reference tables.
+
+                x-reference:  /reference?applicationId=EB.LOOKUP AA.SERVICE
+
+                example: ABC123
+
+              availabilityStatus:
+                type: string
+
+                description: >
+                  Indicates availability of the respective service. Defaults to 'AVAILABLE' if omitted.
+
+                example: AVAILABLE
+
+                enum:
+                  - AVAILABLE
+                  - UNAVAILABLE
+                  - PENDING
+                  - OPTIONAL
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+      required:
+        - services
+    removeServicesDepositsRequest:
+      type: object
+      properties:
+        services:
+          type: array
+          items:
+            type: object
+            properties:
+              serviceCode:
+                type: string
+
+                description: >
+                  Defines the service that will be modified for the account. Available values for this field can be retrieved from the /reference API from the static reference APIs for reference tables.
+
+                x-reference:  /reference?applicationId=EB.LOOKUP AA.SERVICE
+
+                example: ABC123
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+      required:
+        - services
+    updateDepositPostingRestrictionsRequest:
+      type: object
+      properties:
+        restrictions:
+          type: array
+          items:
+            type: object
+            properties:
+              restrictionCode:
+                type: string
+
+                description: >
+                  Predefined code indicating the type of posting restriction (1->DR_BLOCK, 2->CR_BLOCK, 3->ALL_BLOCK).
+
+                x-reference:  /reference?applicationId=POSTING.RESTRICT
+
+                example: 1
+
+              blockingCode:
+                type: string
+
+                description: >
+                  Predefined code used to apply a posting restriction linked to restrictionCode.
+
+                x-reference:  /reference?applicationId=EB.LOOKUP BLOCK.REASON.CODES
+
+                example: CUSTOMER.REQUEST
+
+              blockingReason:
+                type: string
+
+                description: >
+                  Free text explaining why a posting restriction was applied.
+
+                example: Upon Customer Request
+
+              startDate:
+                type: string
+
+                description: >
+                  Defines the date on which the transaction, payment, or change gets initiated. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              endDate:
+                type: string
+
+                description: >
+                  Defines the date on which the transaction, payment, or change ends. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+      required:
+        - restrictions
+    unblockDepositPostingRestrictionsRequest:
+      type: object
+      properties:
+        unblockRestrictions:
+          type: array
+          items:
+            type: object
+            properties:
+              restrictionCode:
+                type: string
+
+                description: >
+                  Predefined code indicating the type of posting restriction (1->DR_BLOCK, 2->CR_BLOCK, 3->ALL_BLOCK).
+
+                x-reference:  /reference?applicationId=POSTING.RESTRICT
+
+                example: 1
+
+              unblockingCode:
+                type: string
+
+                description: >
+                  Predefined code used to lift a posting restriction linked to restrictionCode.
+
+                x-reference:  /reference?applicationId=EB.LOOKUP UNBLOCK.REASON.CODES
+
+                example: CHANGE.OWNERSHIP
+
+              unblockingReason:
+                type: string
+
+                description: >
+                  Free text capturing the reason for removing a posting restriction.
+
+                example: customer request
+
+              endDate:
+                type: string
+
+                description: >
+                  Defines the date on which the transaction, payment, or change ends. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+      required:
+        - unblockRestrictions
+    createEarlyWithdrawalsRequest:
+      type: object
+      x-conditional: >
+        The field 'withdrawalAmount' is required when 'withdrawalType' is 'Partial'.
+      properties:
+        withdrawalType:
+          type: string
+
+          description: >
+            Defines whether an early withdrawal is full or partial.
+
+          example: Full
+
+          enum:
+            - Full
+            - Partial
+
+        withdrawalAmount:
+          type: number
+
+          description: >
+            Defines the amount withdrawn for a partial early withdrawal.
+
+          example: 1000.0
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          x-reference:  /reference?applicationId=CURRENCY.PARAM
+
+          example: USD
+
+      required:
+        - withdrawalType
+        - currency
+    changeDepositPaymentScheduleRequest:
+      type: object
+      properties:
+        paymentChanges:
+          type: array
+          items:
+            type: object
+            properties:
+              paymentType:
+                type: string
+
+                description: >
+                  Indicates the type of payment defined in the payment schedule (e.g., interest, principal).
+
+                x-reference:  /reference?applicationId=AA.PAYMENT.TYPE
+
+                example: equatedPayments
+
+              property:
+                type: string
+
+                description: >
+                  Defines the property associated with the respective payment or balance type.
+
+                x-reference:  /reference?applicationId=AA.PROPERTY
+
+                example: DepositInterest
+
+              paymentFrequency:
+                type: string
+
+                description: >
+                  Indicates the recurrence interval at which payments are generated.
+
+                example: Monthly
+
+                enum:
+                  - Daily
+                  - Weekly
+                  - Monthly
+                  - Quarterly
+                  - Annually
+
+              startDate:
+                type: string
+
+                description: >
+                  Defines the date on which the transaction, payment, or change gets initiated. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              effectiveDate:
+                type: string
+
+                description: >
+                  Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+                example: 2025-04-14
+
+              narrative:
+                type: string
+
+                description: >
+                  Contains an explanation of the changes that were made.
+
+                example: Lending account simulation
+
+    createDepositsSettlementInstructionsRequest:
+      type: object
+      x-conditional: >
+        Either 'payinAccountId' or 'payinBeneficiaryId' is required. Both cannot be present at the same time.
+        Either 'payoutAccountId' or 'payoutBeneficiaryId' is required. Both cannot be present at the same time.
+        If 'enablePayinSettlement' is set to 'true' and 'payinBeneficiaryId' is present in the payload, then 'payinPoProduct' is required.
+        If 'enablePayoutSettlement' is set to 'true' and 'payoutBeneficiaryId' is present in the payload, then 'payoutPoProduct' is required.
+        The fields 'payinPercentage' and 'maximumPayinAmount' are mutually exclusive. Neither are required and both cannot be present at the same time.
+        The fields 'payoutPercentage' and 'maximumPayoutAmount' are mutually exclusive. Neither are required and both cannot be present at the same time.
+        If 'enablePayinSettlement' is set to 'true', then the fields 'payinPaymentType' and 'payinSettlementType' are both required.
+        If 'enablePayoutSettlement' is set to 'true', then either 'payoutProperty' or 'payoutPropertyClass' is required. Both cannot be present.
+      properties:
+        payinInstructions:
+          type: array
+          items:
+            type: object
+            properties:
+              payinPaymentType:
+                type: string
+
+                description: >
+                  Defines the payment type to which the settlement configuration applies (e.g., for current/savings accounts - Interest, Charge, or Payoff; for deposits - Funding or Charge).
+
+                x-reference:  /reference?applicationId=AA.PAYMENT.TYPE
+
+                example: CHARGE
+
+              payinSettlementType:
+                type: string
+
+                description: >
+                  Defines how the settlement will be handled in case of insufficient funds (e.g., Full, Partial, or None).
+
+                example: Full
+
+              enablePayinSettlement:
+                type: boolean
+
+                description: >
+                  Defines if the settlement instructions that are configured for receiving amounts are active (true) or not (false).
+
+                example: False
+
+              payinAccountId:
+                type: string
+
+                description: >
+                  Specifies the account number to be debited for the billed amount.
+
+                example: 1013724489
+
+              payinBeneficiaryId:
+                type: string
+
+                description: >
+                  Specifies the beneficiary to be debited for the billed amount.
+
+                example: BEN2509020900
+
+              payinPoProduct:
+                type: string
+
+                description: >
+                  Defines the payment order product that will be used to perform the payment.
+
+                example: ACCOUNT
+
+              payinPercentage:
+                type: number
+
+                description: >
+                  Defines the percentage of the bill amount debited to this settlement account. Total percentages for a payment type must not exceed 100%. The last entry should be left blank to represent the remainder. Settlement is processed top-down.
+
+                example: 4.0
+
+              maximumPayinAmount:
+                type: number
+
+                description: >
+                  Defines the maximum bill amount that can be debited to this settlement account. Settlement is processed top-down; totals are not validated against the bill amount.
+
+                example: 1000.0
+
+              payinActivity:
+                type: string
+
+                description: >
+                  Defines the activity code used to settle the amount for the respective payment type(s).
+
+                example: LENDING-APPLYPAYMENT-RepaymentRules
+
+              debitActivity:
+                type: string
+
+                description: >
+                  Defines the activity code used to debit the settlement account for the appropriate bill amount.
+
+                example: ACCOUNTS-DEBIT-ARRANGEMENT
+
+        payoutInstructions:
+          type: array
+          items:
+            type: object
+            properties:
+              enablePayoutSettlement:
+                type: boolean
+
+                description: >
+                  Defines if the settlement instructions that are configured for paying out amounts are active (true) or not (false).
+
+                example: False
+
+              payoutAccountId:
+                type: string
+
+                description: >
+                  Specifies the account number to be credited with the billed amount.
+
+                example: 1013724489
+
+              payoutBeneficiaryId:
+                type: string
+
+                description: >
+                  Specifies the beneficiary to be credited with the billed amount.
+
+                example: BEN2509020900
+
+              payoutPoProduct:
+                type: string
+
+                description: >
+                  Defines the payment order product that will be used to perform the payment.
+
+                example: ACCOUNT
+
+              payoutPercentage:
+                type: number
+
+                description: >
+                  Defines the percentage of the bill amount credited to this settlement account. Total percentages for a payment type must not exceed 100%. The last entry should be left blank to represent the remainder. Settlement is processed top-down.
+
+                example: 4.0
+
+              maximumPayoutAmount:
+                type: number
+
+                description: >
+                  Defines the maximum bill amount that can be credited to this settlement account. Settlement is processed top-down; totals are not validated against the bill amount.
+
+                example: 1000.0
+
+              payoutActivity:
+                type: string
+
+                description: >
+                  Defines the activity code used to settle the amount for the respective payment type(s).
+
+                example: LENDING-APPLYPAYMENT-WithdrawalRules
+
+              creditActivity:
+                type: string
+
+                description: >
+                  Defines the activity code used to credit the settlement account for the appropriate bill amount.
+
+                example: ACCOUNTS-CREDIT-ARRANGEMENT
+
+              payoutProperty:
+                type: string
+
+                description: >
+                  Defines the property which will be used to credit the respective settlement Account.
+
+                example: ACCHARGE
+
+              payoutPropertyClass:
+                type: string
+
+                description: >
+                  Defines the property class which will be used to credit the respective settlement Account.
+
+                example: ACCOUNT
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+        externalDetails:
+          type: object
+
+          description: >
+            An object containing the company reference and system reference that are used to define and identify an external account id.
+
+          items:
+            type: object
+            properties:
+              companyReference:
+                type: string
+
+                description: >
+                  Defines the company code to which the external account belongs.
+
+                example: GB0010001
+
+              systemReference:
+                type: string
+
+                description: >
+                  Defines the system to which the external account belongs.
+
+                example: lending
+
+    createDepositSettlementInstructionsLiteRequest:
+      type: object
+      properties:
+        enablePayinSettlement:
+          type: boolean
+
+          description: >
+            Defines if the settlement instructions that are configured for receiving amounts are active (true) or not (false).
+
+          example: False
+
+        enablePayoutSettlement:
+          type: boolean
+
+          description: >
+            Defines if the settlement instructions that are configured for paying out amounts are active (true) or not (false).
+
+          example: False
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+      required:
+        - enablePayinSettlement
+        - enablePayoutSettlement
+    createDepositSettlementInstructionsDefaultRequest:
+      type: object
+      properties:
+        defaultSettlementAccountId:
+          type: string
+
+          description: >
+            Specifies the account number to be debited or credited by default, when no detailed instructions exist, for the billed amount.
+
+          example: 1013724489
+
+        defaultBeneficiaryId:
+          type: string
+
+          description: >
+            Specifies the beneficiary to be debited or credited by default, when no detailed instructions exist, for the billed amount.
+
+          example: BEN2509020900
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        externalDetails:
+          type: object
+
+          description: >
+            An object containing the company reference and system reference that are used to define and identify an external account id.
+
+          items:
+            type: object
+            properties:
+              companyReference:
+                type: string
+
+                description: >
+                  Defines the company code to which the external account belongs.
+
+                example: GB0010001
+
+              systemReference:
+                type: string
+
+                description: >
+                  Defines the system to which the external account belongs.
+
+                example: lending
+
+    changeDepositDormancyStatusRequest:
+      type: object
+      properties:
+        dormancyStatus:
+          type: string
+
+          description: >
+            Specifies the operative status of the account (e.g., active, inactive, dormant, unclaimed).
+
+          x-reference:  /reference?applicationId=AA.DORMANCY.STATUS
+
+          example: CURRENT
+
+        effectiveDate:
+          type: string
+
+          description: >
+            Defines the date on which the change goes into effect. Defaults to the current banking date if omitted. The format of the date is yyyy-mm-dd.
+
+          example: 2025-04-14
+
+        narrative:
+          type: string
+
+          description: >
+            Contains an explanation of the changes that were made.
+
+          example: Lending account simulation
+
+      required:
+        - dormancyStatus
+
+  responses:
+    BusinessErrorResponse:
+      description: BusinessErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.
+    SystemErrorResponse:
+      description: SystemErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.
+    DefaultErrorResponse:
+      description: DefaultErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.

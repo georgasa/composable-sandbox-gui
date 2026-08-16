@@ -1,0 +1,700 @@
+openapi: 3.0.0
+info:
+  title: Lending Module - Payments
+  version: 1.0.0
+  description: >
+    Temenos exhibits modularity in its design approach by dividing the system into smaller, loosely coupled modules. The deposits modules of Retail Modular Banking is an independently deployable piece of software providing solution for specific business area namely retail deposits and retail accounts. This API can be used to create and manage accounts such as current, savings, using the Arrangement Architecture.
+
+servers:
+  - url: http://api.server.com/api/v1.0.0
+  - url: https://api.server.com/api/v1.0.0
+
+security:
+  - basicAuth: []
+  - apiKey: []
+
+paths:
+
+  /order/payments/creditAccount:
+    post:
+      operationId: createCreditAccount
+
+      x-event: lending.credit.transactionExecuted
+
+      summary: Post credit entry.
+      description: >
+        Post an incoming credit entry to an existing account.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createCreditAccountRequest"
+
+      responses:
+        '200':
+          description: createCreditAccount
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/createCreditAccountResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /order/payments/debitAccount:
+    post:
+      operationId: createDebitAccount
+
+      x-event: lending.debit.transactionExecuted
+
+      summary: Post debit entry.
+      description: >
+        Post an incoming debit entry to an existing account.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createDebitAccountRequest"
+
+      responses:
+        '200':
+          description: createDebitAccount
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/createDebitAccountResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /order/payments/internalTransfer:
+    post:
+      operationId: createInternalTransfer
+
+      x-event: 
+
+      summary: Transfer funds between two accounts.
+      description: >
+        Transfer funds between two accounts. This transfer of funds can be between accounts in the same currency or a different currency.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createInternalTransferRequest"
+
+      responses:
+        '200':
+          description: createInternalTransfer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/createInternalTransferResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /order/payments/reserveFunds:
+    post:
+      operationId: createReserveFunds
+
+      summary: Lock funds in an account.
+      description: >
+        Lock funds in an account to ensure that the funds are reserved for an intended transaction before it actually takes place.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createReserveFundsRequest"
+
+      responses:
+        '200':
+          description: createReserveFunds
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/createReserveFundsResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+components:
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    apiKey:
+      type: apiKey
+      name: Authorization
+      in: header
+
+  parameters:
+    page_size:
+      name: page_size
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: >
+        The total number of records per page.
+    page_start:
+      name: page_start
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: >
+        The record from which the response should be displayed.
+    page_token:
+      name: page_token
+      in: query
+      required: false
+      schema:
+        type: string
+      description: >
+        Unique id expected to be returned as part of the response from the system.
+    disablePagination:
+      name: disablePagination
+      in: header
+      required: false
+      schema:
+        type: boolean
+      description: >
+        Defines the availability of the pagination attributes in the header. If it is set to true, the system will fetch all the data without pagination.
+    validate_only:
+      name: validate_only
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: >
+        Indicates whether the request should be validated only (true) or executed (false).
+    credentials:
+      name: credentials
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Username and password to authenticate the API request in the system.
+    companyId:
+      name: companyId
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        The system supports multiple companies/entities within it. This tag defines the company code to which the new account will be created.
+    deviceId:
+      name: deviceId
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Identifies the device type.
+    userRole:
+      name: userRole
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        User who initiated the transaction.
+    channel:
+      name: channel
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Captures the origination or servicing channel through which the account or transaction was initiated, such as BRANCH or ONLINE.
+
+  schemas:
+
+    createDebitAccountResponse:
+      type: object
+      properties:
+        transactionReference:
+          type: string
+
+          description: >
+            Unique reference for transactions in deposit/account operations.
+
+          example: BOOK.ENTRIES.API.1.6.0-04-15-2026561846504301-1
+
+    createCreditAccountResponse:
+      type: object
+      properties:
+        transactionReference:
+          type: string
+
+          description: >
+            Unique reference for transactions in deposit/account operations.
+
+          example: BOOK.ENTRIES.API.1.6.0-04-15-2026561846504301-1
+
+    createReserveFundsResponse:
+      type: object
+      properties:
+        transactionReference:
+          type: string
+
+          description: >
+            Unique reference for transactions in deposit/account operations.
+
+          example: BOOK.ENTRIES.API.1.6.0-04-15-2026561846504301-1
+
+    createInternalTransferResponse:
+      type: object
+      properties:
+        transactionReference:
+          type: string
+
+          description: >
+            Unique reference for transactions in deposit/account operations.
+
+          example: BOOK.ENTRIES.API.1.6.0-04-15-2026561846504301-1
+
+    ArrangementResponse:
+      type: object
+      description: ArrangementResponse
+      properties:
+        activityReference:
+          type: string
+
+          description: >
+            Contains the unique reference id generated for the activity that was performed.
+
+          example: AAACT25105T3FKC472
+
+    AccountResponse:
+      type: object
+      description: AccountResponse
+      properties:
+        accountReference:
+          type: string
+
+          description: >
+            Contains the unique alternate account identifier linked to referenceType, e.g., IBAN or legacy system.
+
+          example: QUOT246813
+
+    createDebitAccountRequest:
+      type: object
+      properties:
+        paymentTransactionReference:
+          type: string
+
+          description: >
+            Unique reference for transactions in deposit/account operations.
+
+          example: QUOT246813
+
+        paymentReservationReference:
+          type: string
+
+          description: >
+            Unique reference key for reserved funds in a transaction.
+
+          example: TXN123456789
+
+        paymentValueDate:
+          type: string
+
+          description: >
+            Defines the date when the transfer is executed (current, past, or future). The format of the date is yyyy-mm-dd.
+
+          example: 2025-06-14
+
+        debitAccount:
+          type: string
+
+          description: >
+            Defines the account from which funds will be debited for the transaction.
+
+          example: 1013716494
+
+        paymentAmount:
+          type: number
+
+          description: >
+            Defines the amount to be transferred for the transaction.
+
+          example: 1000.0
+
+        debitCurrency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency in which the funds are debited. For example - USD.
+
+          example: USD
+
+        paymentDescription:
+          type: string
+
+          description: >
+            Contains a description of the purpose or reason for the transaction.
+
+          example: Transfer to savings
+
+        transactionCode:
+          type: string
+
+          description: >
+            Defines the code used to classify and identify the transaction type.
+
+          example: ABC123
+
+      required:
+        - paymentTransactionReference
+        - paymentValueDate
+        - debitAccount
+        - paymentAmount
+        - debitCurrency
+        - paymentDescription
+    createCreditAccountRequest:
+      type: object
+      properties:
+        paymentTransactionReference:
+          type: string
+
+          description: >
+            Unique reference for transactions in deposit/account operations.
+
+          example: QUOT246813
+
+        paymentReservationReference:
+          type: string
+
+          description: >
+            Unique reference key for reserved funds in a transaction.
+
+          example: TXN123456789
+
+        paymentValueDate:
+          type: string
+
+          description: >
+            Defines the date when the transfer is executed (current, past, or future). The format of the date is yyyy-mm-dd.
+
+          example: 2025-06-14
+
+        creditAccount:
+          type: string
+
+          description: >
+            Defines the account for which funds will be credited for the transaction.
+
+          example: 1013716494
+
+        paymentAmount:
+          type: number
+
+          description: >
+            Defines the amount to be transferred for the transaction.
+
+          example: 1000.0
+
+        creditCurrency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency in which the funds are credited. For example - USD.
+
+          example: USD
+
+        paymentDescription:
+          type: string
+
+          description: >
+            Contains a description of the purpose or reason for the transaction.
+
+          example: Transfer to savings
+
+        exposureDate:
+          type: string
+
+          description: >
+            The effective date used to calculate credit exposure when crediting an account.
+
+          example: 2025-04-14
+
+        transactionCode:
+          type: string
+
+          description: >
+            Defines the code used to classify and identify the transaction type.
+
+          example: ABC123
+
+      required:
+        - paymentTransactionReference
+        - paymentValueDate
+        - creditAccount
+        - paymentAmount
+        - creditCurrency
+        - paymentDescription
+    createReserveFundsRequest:
+      type: object
+      properties:
+        paymentValueDate:
+          type: string
+
+          description: >
+            Defines the date when the transfer is executed (current, past, or future). The format of the date is yyyy-mm-dd.
+
+          example: 2025-06-14
+
+        debitAccount:
+          type: string
+
+          description: >
+            Defines the account in which funds will be reserved for the transaction.
+
+          example: 1013716494
+
+        debitCurrency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency in which the funds are debited. For example - USD.
+
+          example: USD
+
+        paymentAmount:
+          type: number
+
+          description: >
+            Defines the amount to be reserved for the transaction.
+
+          example: 1000.0
+
+        paymentDescription:
+          type: string
+
+          description: >
+            Contains a description of the purpose or reason for the transaction.
+
+          example: Transfer to savings
+
+        paymentReservationReference:
+          type: string
+
+          description: >
+            Unique reference key for reserved funds in a transaction.
+
+          example: TXN123456789
+
+      required:
+        - paymentValueDate
+        - debitAccount
+        - debitCurrency
+        - paymentAmount
+        - paymentReservationReference
+    createInternalTransferRequest:
+      type: object
+      properties:
+        paymentTransactionReference:
+          type: string
+
+          description: >
+            Unique reference for transactions in deposit/account operations.
+
+          example: QUOT246813
+
+        paymentReservationReference:
+          type: string
+
+          description: >
+            Unique reference key for reserved funds in a transaction.
+
+          example: TXN123456789
+
+        paymentValueDate:
+          type: string
+
+          description: >
+            Defines the date when the transfer is executed (current, past, or future). The format of the date is yyyy-mm-dd.
+
+          example: 2025-06-14
+
+        debitAccount:
+          type: string
+
+          description: >
+            Defines the account from which funds will be debited for the transaction.
+
+          example: 1013716494
+
+        creditAccount:
+          type: string
+
+          description: >
+            Defines the account for which funds will be credited for the transaction.
+
+          example: 1013716494
+
+        debitCurrency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency in which the funds are debited. For example - USD.
+
+          example: USD
+
+        paymentAmount:
+          type: number
+
+          description: >
+            Defines the amount to be transferred for the transaction.
+
+          example: 1000.0
+
+        paymentDescription:
+          type: string
+
+          description: >
+            Contains a description of the purpose or reason for the transaction.
+
+          example: Transfer to savings
+
+      required:
+        - paymentTransactionReference
+        - paymentValueDate
+        - debitAccount
+        - creditAccount
+        - debitCurrency
+        - paymentAmount
+        - paymentDescription
+
+  responses:
+    BusinessErrorResponse:
+      description: BusinessErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.
+    SystemErrorResponse:
+      description: SystemErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.
+    DefaultErrorResponse:
+      description: DefaultErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.

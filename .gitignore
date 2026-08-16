@@ -1,0 +1,24 @@
+# Secrets / local env
+.env
+*.env.local
+data/
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+.venv/
+**/.venv/
+
+# Node
+node_modules/
+dist/
+**/node_modules/
+**/dist/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

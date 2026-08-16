@@ -1,0 +1,41 @@
+# BACKEND_HOST/BACKEND_PORT are envsubst'd at container start by the
+# official nginx image's built-in template mechanism. Defaults match the
+# local Docker Compose service name; Azure sets BACKEND_HOST to the
+# mobile-backend Container App's internal FQDN instead.
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Lazy per-request DNS resolution via this container's actual resolver
+    # (RESOLVER_IP, set by docker-entrypoint.d/05-set-resolver.envsh) --
+    # see console-app/frontend/nginx.conf.template for why (nginx otherwise
+    # crashes on startup if BACKEND_HOST isn't resolvable yet).
+    resolver ${RESOLVER_IP} valid=10s;
+
+    # No URI on proxy_pass here -- see console-app/frontend/nginx.conf.template
+    # for why (a variable in proxy_pass disables location-prefix rewriting,
+    # so the original /api/... request URI passes through unchanged, which
+    # is correct since the backend's routes are already mounted under /api).
+    location /api/ {
+        set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
+        proxy_pass http://$backend;
+        proxy_set_header Host $host;
+        proxy_read_timeout 120s;
+    }
+
+    location /healthz {
+        set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
+        proxy_pass http://$backend;
+    }
+
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+
+    location / {
+        add_header Cache-Control "no-cache";
+        try_files $uri /index.html;
+    }
+}

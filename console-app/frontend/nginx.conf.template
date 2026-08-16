@@ -1,0 +1,62 @@
+# BACKEND_HOST/BACKEND_PORT are envsubst'd at container start by the
+# official nginx image's built-in template mechanism (files under
+# /etc/nginx/templates/*.template -> /etc/nginx/conf.d/*.conf, nginx>=1.19,
+# no custom entrypoint needed). Defaults match the local Docker
+# Compose service name; Azure sets BACKEND_HOST to the Container App's
+# internal FQDN instead -- see docker-compose.yml / infra/provision.sh.
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # RESOLVER_IP (set by docker-entrypoint.d/05-set-resolver.envsh from
+    # this container's actual /etc/resolv.conf -- Docker's embedded
+    # 127.0.0.11 locally, Azure Container Apps' internal DNS in the cloud)
+    # + a $backend variable in proxy_pass forces nginx to resolve
+    # BACKEND_HOST per-request instead of once at config load -- without
+    # this, nginx crashes on startup with "host not found in upstream"
+    # whenever the backend container's network alias isn't registered yet
+    # (a startup-order race depends_on doesn't fully prevent), and would
+    # stay broken if the backend ever restarts with a new IP. Discovered
+    # live: console-frontend crash-looped on this exact error the first
+    # time this compose stack came up.
+    resolver ${RESOLVER_IP} valid=10s;
+
+    # No URI on proxy_pass here (deliberately) -- when proxy_pass's target
+    # includes a variable, nginx does NOT do its usual "replace the matched
+    # location prefix" rewriting; it passes the original request URI through
+    # unchanged instead. That's exactly what's wanted here since the
+    # backend's own routes are already mounted under /api, so the incoming
+    # /api/... path is already correct as-is. Learned the hard way: writing
+    # "proxy_pass http://$backend/api/;" here silently 404'd every request,
+    # because with a variable present that trailing "/api/" is NOT treated
+    # as a location-prefix replacement -- it's simply not applied.
+    location /api/ {
+        set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
+        proxy_pass http://$backend;
+        proxy_set_header Host $host;
+        proxy_read_timeout 120s;
+    }
+
+    location /healthz {
+        set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
+        proxy_pass http://$backend;
+    }
+
+    # Vite content-hashes every filename under /assets/ (e.g.
+    # index-r0YZjBB5.css), so those are safe to cache aggressively --
+    # a changed file gets a new URL, never a stale one.
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+
+    # index.html itself is NOT hashed and must never be cached: a stale
+    # copy references asset filenames from the previous build, which the
+    # server has already deleted -- discovered live in this session, where
+    # a cached index.html silently kept serving a CSS file two deploys old.
+    location / {
+        add_header Cache-Control "no-cache";
+        try_files $uri /index.html;
+    }
+}

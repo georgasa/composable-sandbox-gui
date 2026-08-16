@@ -1,0 +1,740 @@
+openapi: 3.0.0
+info:
+  title: Deposits Module - Beneficiary
+  version: 1.0.0
+  description: >
+    Temenos exhibits modularity in its design approach by dividing the system into smaller, loosely coupled modules. The deposits modules of Retail Modular Banking is an independently deployable piece of software providing solution for specific business area namely retail deposits and retail accounts. This API can be used to create and manage accounts such as current, savings, using the Arrangement Architecture.
+
+servers:
+  - url: http://api.server.com/api/v1.0.0
+  - url: https://api.server.com/api/v1.0.0
+
+security:
+  - basicAuth: []
+  - apiKey: []
+
+tags:
+  - name: Beneficiaries
+
+paths:
+
+  /holdings/beneficiary:
+    post:
+      operationId: createBeneficiary
+
+      x-event: payments.createBeneficiary.beneficiaryCreated
+
+      tags:
+        - Beneficiaries
+
+      summary: Create new beneficiary.
+      description: >
+        Create a new beneficiary under the BENEFICIARY application. Beneficiaries are independent of any arrangement and can be added to any account.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createBeneficiaryRequest"
+
+      responses:
+        '200':
+          description: createBeneficiary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/createBeneficiaryResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /holdings/beneficiary/{beneficiaryId}:
+    delete:
+      operationId: deleteBeneficiary
+
+      x-event: payments.deleteBeneficiary.beneficiaryDeleted
+
+      tags:
+        - Beneficiaries
+
+      summary: Delete a beneficiary.
+      description: >
+        Delete an existing beneficiary under the BENEFICIARY application.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: beneficiaryId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the beneficiary. For example - BEN2507609209.
+          example: BEN2507609209
+
+      responses:
+        '200':
+          description: deleteBeneficiary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/deleteBeneficiaryResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+    get:
+      operationId: getBeneficiary
+
+      tags:
+        - Beneficiaries
+
+      summary: Get beneficiaries.
+      description: >
+        Returns a list of beneficiaries for either the specified account or all accounts, along with details such as nickname and account type.
+
+      parameters:
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_start'
+        - $ref: '#/components/parameters/page_token'
+        - $ref: '#/components/parameters/disablePagination'
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: beneficiaryId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the beneficiary. For example - BEN2507609209.
+          example: BEN2507609209
+
+      responses:
+        '200':
+          description: getBeneficiary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getBeneficiaryResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+    put:
+      operationId: updateBeneficiary
+
+      x-event: payments.updateBeneficiary.beneficiaryUpdated
+
+      tags:
+        - Beneficiaries
+
+      summary: Update a beneficiary.
+      description: >
+        Update an existing beneficiary under the BENEFICIARY application. Characteristics such as the account id, owner customer id, and identifications can be modified.
+
+      parameters:
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+        - name: beneficiaryId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            Unique identifier of the beneficiary. For example - BEN2507609209.
+          example: BEN2507609209
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateBeneficiaryRequest"
+
+      responses:
+        '200':
+          description: updateBeneficiary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/updateBeneficiaryResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+components:
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    apiKey:
+      type: apiKey
+      name: Authorization
+      in: header
+
+  parameters:
+    page_size:
+      name: page_size
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: >
+        The total number of records per page.
+    page_start:
+      name: page_start
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: >
+        The record from which the response should be displayed.
+    page_token:
+      name: page_token
+      in: query
+      required: false
+      schema:
+        type: string
+      description: >
+        Unique id expected to be returned as part of the response from the system.
+    disablePagination:
+      name: disablePagination
+      in: header
+      required: false
+      schema:
+        type: boolean
+      description: >
+        Defines the availability of the pagination attributes in the header. If it is set to true, the system will fetch all the data without pagination.
+    validate_only:
+      name: validate_only
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: >
+        Indicates whether the request should be validated only (true) or executed (false).
+    credentials:
+      name: credentials
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Username and password to authenticate the API request in the system.
+    companyId:
+      name: companyId
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        The system supports multiple companies/entities within it. This tag defines the company code to which the new account will be created.
+    deviceId:
+      name: deviceId
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Identifies the device type.
+    userRole:
+      name: userRole
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        User who initiated the transaction.
+    channel:
+      name: channel
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Captures the origination or servicing channel through which the account or transaction was initiated, such as BRANCH or ONLINE.
+
+  schemas:
+
+    createBeneficiaryResponse:
+      type: object
+      properties:
+        beneficiaryId:
+          type: string
+
+          description: >
+            Unique identifier of the beneficiary. For example - BEN2507609209.
+
+          example: BEN2507609209
+
+    updateBeneficiaryResponse:
+      type: object
+      properties:
+        beneficiaryId:
+          type: string
+
+          description: >
+            Unique identifier of the beneficiary. For example - BEN2507609209.
+
+          example: BEN2507609209
+
+    deleteBeneficiaryResponse:
+      type: object
+      properties:
+        beneficiaryId:
+          type: string
+
+          description: >
+            Unique identifier of the beneficiary. For example - BEN2507609209.
+
+          example: BEN2507609209
+
+    getBeneficiaryResponse:
+      type: object
+      properties:
+        accountIBAN:
+          type: string
+
+          description: >
+            Defines the IBAN code of the beneficiary's account.
+
+          example: GB83DEMO6016131013724489
+
+        accountId:
+          type: string
+
+          description: >
+            Unique identifier of the account. For example - 123456.
+
+          example: 123456
+
+        accountType:
+          type: string
+
+          description: >
+            Defines the type of the beneficiary's account as identified by their bank (e.g., Current, Savings, CLABE, Mobile).
+
+          example: CURRENT
+
+        beneficiaryCustomerId:
+          type: string
+
+          description: >
+            Customer ID of the beneficiary. Mutually exclusive with beneficiaryCustomerName.
+
+          example: 189993
+
+        beneficiaryName:
+          type: string
+
+          description: >
+            Full name of the beneficiary.
+
+          example: John Smith
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          example: USD
+
+        identifications:
+          type: array
+
+          description: >
+            Defines the identification documents that verify the beneficiary.
+
+          items:
+            type: object
+            properties:
+              identificationCode:
+                type: string
+
+                description: >
+                  Defines the id of the identification document used to verify the beneficiary.
+
+                example: ABC123
+
+              identificationType:
+                type: string
+
+                description: >
+                  Defines the type of identification document used to verify the beneficiary (e.g Ta Number, SSN, etc).
+
+                example: SSN
+
+        nickName:
+          type: string
+
+          description: >
+            Defines the nickname of the beneficiary. This name is unique across the system.
+
+          example: john
+
+        ownerCustomerId:
+          type: string
+
+          description: >
+            Defines the account id of the owner of the beneficiary.
+
+          example: 189993
+
+        trusted:
+          type: string
+
+          description: >
+            Defines whether the beneficiary is considered trusted (true) or not (false).
+
+          example: Yes
+
+    ArrangementResponse:
+      type: object
+      description: ArrangementResponse
+      properties:
+        activityReference:
+          type: string
+
+          description: >
+            Contains the unique reference id generated for the activity that was performed.
+
+          example: AAACT25105T3FKC472
+
+    AccountResponse:
+      type: object
+      description: AccountResponse
+      properties:
+        accountReference:
+          type: string
+
+          description: >
+            Contains the unique alternate account identifier linked to referenceType, e.g., IBAN or legacy system.
+
+          example: QUOT246813
+
+    createBeneficiaryRequest:
+      type: object
+      x-conditional: >
+        Either 'beneficiaryCustomerId' or 'beneficiaryCustomerName' is required. Both cannot be present at the same time.
+      properties:
+        nickName:
+          type: string
+
+          description: >
+            Defines the nickname of the beneficiary. This name is unique across the system.
+
+          example: john
+
+        accountId:
+          type: string
+
+          description: >
+            Unique identifier of the account. For example - 123456.
+
+          example: 123456
+
+        accountIBAN:
+          type: string
+
+          description: >
+            Defines the IBAN code of the beneficiary's account.
+
+          example: GB83DEMO6016131013724489
+
+        accountType:
+          type: string
+
+          description: >
+            Defines the type of the beneficiary's account as identified by their bank (e.g., Current, Savings, CLABE, Mobile).
+
+          example: CURRENT
+
+        ownerCustomerId:
+          type: string
+
+          description: >
+            Defines the account id of the owner of the beneficiary.
+
+          example: 189993
+
+        beneficiaryCustomerId:
+          type: string
+
+          description: >
+            Customer ID of the beneficiary. Mutually exclusive with beneficiaryCustomerName.
+
+          example: 189993
+
+        beneficiaryCustomerName:
+          type: string
+
+          description: >
+            Defines the customer name of the beneficiary.
+
+          example: johnDoe
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          x-reference:  /reference?applicationId=CURRENCY.PARAM
+
+          example: USD
+
+        identifications:
+          type: array
+          items:
+            type: object
+            properties:
+              identificationType:
+                type: string
+
+                description: >
+                  Defines the type of identification document used to verify the beneficiary (e.g Ta Number, SSN, etc).
+
+                example: SSN
+
+              identificationCode:
+                type: string
+
+                description: >
+                  Defines the id of the identification document used to verify the beneficiary.
+
+                example: ABC123
+
+        trusted:
+          type: string
+
+          description: >
+            Defines whether the beneficiary is considered trusted (Yes) or not (No).
+
+          example: Yes
+
+          enum:
+            - Yes
+            - No
+
+      required:
+        - nickName
+        - accountId
+        - ownerCustomerId
+        - currency
+    updateBeneficiaryRequest:
+      type: object
+      x-conditional: >
+        The fields 'beneficiaryCustomerId' and 'beneficiaryCustomerName' cannot both be present in the payload. Only one of the two is allowed.
+      properties:
+        nickName:
+          type: string
+
+          description: >
+            Defines the nickname of the beneficiary. This name is unique across the system.
+
+          example: john
+
+        accountId:
+          type: string
+
+          description: >
+            Unique identifier of the account. For example - 123456.
+
+          example: 123456
+
+        accountIBAN:
+          type: string
+
+          description: >
+            Defines the IBAN code of the beneficiary's account.
+
+          example: GB83DEMO6016131013724489
+
+        accountType:
+          type: string
+
+          description: >
+            Defines the type of the beneficiary's account as identified by their bank (e.g., Current, Savings, CLABE, Mobile).
+
+          example: CURRENT
+
+        ownerCustomerId:
+          type: string
+
+          description: >
+            Defines the account id of the owner of the beneficiary.
+
+          example: 189993
+
+        beneficiaryCustomerId:
+          type: string
+
+          description: >
+            Customer ID of the beneficiary. Mutually exclusive with beneficiaryCustomerName.
+
+          example: 189993
+
+        beneficiaryCustomerName:
+          type: string
+
+          description: >
+            Defines the customer name of the beneficiary.
+
+          example: johnDoe
+
+        currency:
+          type: string
+
+          description: >
+            Contains the 3-digit ISO currency code that indicates the currency of the account. For example - USD.
+
+          x-reference:  /reference?applicationId=CURRENCY.PARAM
+
+          example: USD
+
+        identifications:
+          type: array
+          items:
+            type: object
+            properties:
+              identificationType:
+                type: string
+
+                description: >
+                  Defines the type of identification document used to verify the beneficiary (e.g Ta Number, SSN, etc).
+
+                example: SSN
+
+              identificationCode:
+                type: string
+
+                description: >
+                  Defines the id of the identification document used to verify the beneficiary.
+
+                example: ABC123
+
+        trusted:
+          type: string
+
+          description: >
+            Defines whether the beneficiary is considered trusted (Yes) or not (No).
+
+          example: Yes
+
+          enum:
+            - Yes
+            - No
+
+  responses:
+    BusinessErrorResponse:
+      description: BusinessErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.
+    SystemErrorResponse:
+      description: SystemErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.
+    DefaultErrorResponse:
+      description: DefaultErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.

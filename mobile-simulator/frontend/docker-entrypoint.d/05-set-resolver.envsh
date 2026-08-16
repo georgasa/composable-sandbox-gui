@@ -1,0 +1,3 @@
+# Sourced by nginx's entrypoint before envsubst runs -- see
+# console-app/frontend/docker-entrypoint.d/05-set-resolver.envsh for why.
+export RESOLVER_IP="$(awk '/^nameserver/{print $2; exit}' /etc/resolv.conf)"

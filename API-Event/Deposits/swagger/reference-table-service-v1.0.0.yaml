@@ -1,0 +1,274 @@
+openapi: 3.0.0
+info:
+  title: Static Reference APIs For Reference Tables
+  version: 1.0.0
+  description: >
+    Reference Tables
+
+servers:
+  - url: http://api.server.com/api/v1.0.0
+  - url: https://api.server.com/api/v1.0.0
+
+security:
+  - basicAuth: []
+  - apiKey: []
+
+paths:
+
+  /reference/:
+    get:
+      operationId: getReference
+
+      tags:
+        - Reference Applications
+
+      summary: Retrieves data from the given reference table, such as currency name.
+      description: >
+        Returns the ids and descriptions from available reference tables using the provided application id.
+
+      parameters:
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_start'
+        - $ref: '#/components/parameters/page_token'
+        - $ref: '#/components/parameters/disablePagination'
+        - $ref: '#/components/parameters/validate_only'
+        - $ref: '#/components/parameters/credentials'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/userRole'
+        - $ref: '#/components/parameters/channel'
+
+      responses:
+        '200':
+          description: getReference
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getReferenceResponse"
+
+        '400':
+          $ref: '#/components/responses/BusinessErrorResponse'
+        '500':
+          $ref: '#/components/responses/SystemErrorResponse'
+        'default':
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+components:
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    apiKey:
+      type: apiKey
+      name: Authorization
+      in: header
+
+  parameters:
+    page_size:
+      name: page_size
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: >
+        The total number of records per page.
+    page_start:
+      name: page_start
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: >
+        The record from which the response should be displayed.
+    page_token:
+      name: page_token
+      in: query
+      required: false
+      schema:
+        type: string
+      description: >
+        Unique id expected to be returned as part of the response from the system.
+    disablePagination:
+      name: disablePagination
+      in: header
+      required: false
+      schema:
+        type: boolean
+      description: >
+        Defines the availability of the pagination attributes in the header. If it is set to true, the system will fetch all the data without pagination.
+    validate_only:
+      name: validate_only
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: >
+        Indicates whether the request should be validated only (true) or executed (false).
+    credentials:
+      name: credentials
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Username and password to authenticate the API request in the system.
+    companyId:
+      name: companyId
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        The system supports multiple companies/entities within it. This tag defines the company code to which the new account will be created.
+    deviceId:
+      name: deviceId
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Identifies the device type.
+    userRole:
+      name: userRole
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        User who initiated the transaction.
+    channel:
+      name: channel
+      in: header
+      required: false
+      schema:
+        type: string
+      description: >
+        Captures the origination or servicing channel through which the account or transaction was initiated, such as BRANCH or ONLINE.
+
+  schemas:
+
+    getReferenceResponse:
+      type: object
+      properties:
+        applicationId:
+          type: string
+
+          description: >
+            Contains the application id of the service.
+
+          example: 189993
+
+        codeId:
+          type: string
+
+          description: >
+            Contains the id of the reference code.
+
+          example: 189993
+
+        codeName:
+          type: string
+
+          description: >
+            Contains the name of the reference code.
+
+          example: ABC123
+
+    ArrangementResponse:
+      type: object
+      description: ArrangementResponse
+      properties:
+        activityReference:
+          type: string
+
+          description: >
+            Contains the unique reference id generated for the activity that was performed.
+
+          example: AAACT25105T3FKC472
+
+    AccountResponse:
+      type: object
+      description: AccountResponse
+      properties:
+        accountReference:
+          type: string
+
+          description: >
+            Contains the unique alternate account identifier linked to referenceType, e.g., IBAN or legacy system.
+
+          example: QUOT246813
+
+  responses:
+    BusinessErrorResponse:
+      description: BusinessErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.
+    SystemErrorResponse:
+      description: SystemErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.
+    DefaultErrorResponse:
+      description: DefaultErrorResponse
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: >
+                        Identifier of the business/system error message encountered during the request.
+                    property:
+                      type: string
+                      description: >
+                        Defines the property associated with the respective payment or balance type.
+                    message:
+                      type: string
+                      description: >
+                        Contains the actual error message that was received during the request.
