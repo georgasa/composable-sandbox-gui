@@ -38,12 +38,22 @@ server {
     # silently broke every /api/* call once deployed (worked fine locally
     # against plain Docker Compose, which doesn't care about the HTTP
     # version). Discovered live on the first real Azure deployment.
+    #
+    # proxy_set_header Host ${BACKEND_HOST} (NOT $host): Container Apps'
+    # internal ingress routes by Host header, same as its external ingress
+    # does by subdomain. Forwarding the ORIGINAL incoming Host (this
+    # frontend's own hostname, via nginx's default $host) means Envoy can't
+    # match it to any app and returns its generic "This Container App is
+    # stopped or does not exist" page for every single request -- looked
+    # exactly like a real 404, cost real time to trace back to the Host
+    # header. Invisible locally: plain Docker networking doesn't route by
+    # Host header at all, so this only breaks once actually on Azure.
     location /api/ {
         set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
         proxy_http_version 1.1;
         proxy_set_header Connection "";
+        proxy_set_header Host ${BACKEND_HOST};
         proxy_pass http://$backend;
-        proxy_set_header Host $host;
         proxy_read_timeout 120s;
     }
 
@@ -51,6 +61,7 @@ server {
         set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
         proxy_http_version 1.1;
         proxy_set_header Connection "";
+        proxy_set_header Host ${BACKEND_HOST};
         proxy_pass http://$backend;
     }
 
