@@ -1,0 +1,12 @@
+# Repo-root build context (console-app's Dockerfiles build from here) --
+# excludes host-built artifacts so a container's own `npm install`/`pip
+# install` output never gets clobbered by a COPY of the host's copy (e.g.
+# a Windows-built node_modules has no Unix execute bits, breaking `tsc`
+# when it silently overwrites the container's own Linux-native install).
+**/node_modules
+**/dist
+**/__pycache__
+**/.venv
+**/data
+**/*.tsbuildinfo
+.git

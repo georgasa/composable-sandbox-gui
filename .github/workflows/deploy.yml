@@ -1,0 +1,57 @@
+name: Build and deploy to Azure
+
+# Only builds images and updates the 4 Container Apps that
+# infra/provision.sh already created (registry, environment, apps
+# themselves) -- this workflow never creates or deletes Azure infra.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+env:
+  RG: composable-demo-viewer
+  ACR: composablesandboxgui
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Builds happen inside ACR (az acr build) -- no local Docker needed on
+      # the runner, and it's the same command infra/provision.sh used for
+      # the first-ever build, so the two paths stay in sync.
+      - name: Build console-backend
+        run: az acr build -r "$ACR" -t "console-backend:${{ github.sha }}" -t console-backend:latest -f console-app/backend/Dockerfile . --only-show-errors
+
+      - name: Build console-frontend
+        run: az acr build -r "$ACR" -t "console-frontend:${{ github.sha }}" -t console-frontend:latest -f console-app/frontend/Dockerfile . --only-show-errors
+
+      - name: Build mobile-backend
+        run: az acr build -r "$ACR" -t "mobile-backend:${{ github.sha }}" -t mobile-backend:latest -f mobile-simulator/backend/Dockerfile mobile-simulator/backend --only-show-errors
+
+      - name: Build mobile-frontend
+        run: az acr build -r "$ACR" -t "mobile-frontend:${{ github.sha }}" -t mobile-frontend:latest -f mobile-simulator/frontend/Dockerfile mobile-simulator/frontend --only-show-errors
+
+      # containerapp update only changes the image on a new revision --
+      # env vars set at creation time (infra/provision.sh) carry forward
+      # unchanged, so DEMO_PASSWORD etc. don't need to be re-supplied here.
+      - name: Deploy console-backend
+        run: az containerapp update -g "$RG" -n console-backend --image "$ACR.azurecr.io/console-backend:${{ github.sha }}" --only-show-errors
+
+      - name: Deploy console-frontend
+        run: az containerapp update -g "$RG" -n console-frontend --image "$ACR.azurecr.io/console-frontend:${{ github.sha }}" --only-show-errors
+
+      - name: Deploy mobile-backend
+        run: az containerapp update -g "$RG" -n mobile-backend --image "$ACR.azurecr.io/mobile-backend:${{ github.sha }}" --only-show-errors
+
+      - name: Deploy mobile-frontend
+        run: az containerapp update -g "$RG" -n mobile-frontend --image "$ACR.azurecr.io/mobile-frontend:${{ github.sha }}" --only-show-errors
