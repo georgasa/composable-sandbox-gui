@@ -1,11 +1,11 @@
-import { SKINS, useTheme } from "../../context/ThemeContext";
+import { SKINS, useMobileTheme } from "../../../context/MobileThemeContext";
 
 interface Props {
   onClose: () => void;
 }
 
 export function SettingsScreen({ onClose }: Props) {
-  const { skinId, setSkinId } = useTheme();
+  const { skinId, setSkinId } = useMobileTheme();
 
   return (
     <div className="screen">

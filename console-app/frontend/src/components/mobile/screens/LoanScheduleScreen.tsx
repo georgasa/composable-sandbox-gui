@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { api } from "../../api/client";
-import type { LoanScheduleEntry } from "../../types";
+import { api } from "../../../api/client";
+import type { LoanScheduleEntry } from "../../../types/mobile";
 
 interface Props {
   loanId: string;
@@ -14,7 +14,7 @@ export function LoanScheduleScreen({ loanId, onBack }: Props) {
   useEffect(() => {
     setLoading(true);
     api
-      .getLoanSchedule(loanId)
+      .getMobileLoanSchedule(loanId)
       .then((r) => setItems(r.items))
       .finally(() => setLoading(false));
   }, [loanId]);

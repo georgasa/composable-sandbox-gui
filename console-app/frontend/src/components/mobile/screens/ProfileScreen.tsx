@@ -1,7 +1,9 @@
-import { useSession } from "../../context/SessionContext";
+import { useMobileSession } from "../../../context/MobileSessionContext";
+import { useParty } from "../../../context/PartyContext";
 
 export function ProfileScreen() {
-  const { customer, partyId, reset } = useSession();
+  const { customer, partyId } = useMobileSession();
+  const { setActivePartyId } = useParty();
 
   if (!customer) {
     return (
@@ -34,7 +36,7 @@ export function ProfileScreen() {
           </div>
         ))}
       </div>
-      <button className="btn btn-secondary btn-block" onClick={reset}>
+      <button className="btn btn-secondary btn-block" onClick={() => setActivePartyId(null)}>
         Switch Customer
       </button>
     </div>

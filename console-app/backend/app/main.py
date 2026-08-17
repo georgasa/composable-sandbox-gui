@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import assistant_routes, auth_routes, catalog_routes, environment_routes, execute_routes, llm_config_routes, prepare_routes
+from app.api import assistant_routes, auth_routes, catalog_routes, environment_routes, execute_routes, llm_config_routes, mobile_routes, prepare_routes
 from app.auth import AuthGateMiddleware
 from app.catalog.loader import build_catalog
 from app.config import settings
@@ -45,6 +45,7 @@ app.include_router(execute_routes.router, prefix="/api")
 app.include_router(assistant_routes.router, prefix="/api")
 app.include_router(environment_routes.router, prefix="/api")
 app.include_router(llm_config_routes.router, prefix="/api")
+app.include_router(mobile_routes.router, prefix="/api")
 
 
 @app.get("/healthz")

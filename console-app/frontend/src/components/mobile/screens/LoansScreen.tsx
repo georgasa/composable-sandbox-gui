@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { useSession } from "../../context/SessionContext";
+import { useMobileSession } from "../../../context/MobileSessionContext";
 
 interface Props {
   onSelectLoan: (loanId: string) => void;
 }
 
 export function LoansScreen({ onSelectLoan }: Props) {
-  const { loans, accounts, createLoan, loading } = useSession();
+  const { loans, accounts, createLoan, loading } = useMobileSession();
   const [showForm, setShowForm] = useState(false);
   const [amount, setAmount] = useState("50000");
   const [term, setTerm] = useState("5Y");

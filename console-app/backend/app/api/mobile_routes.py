@@ -1,10 +1,13 @@
-"""Curated, narrow set of endpoints the mobile simulator's screens need --
-not a general catalog. Each one resolves a real sandbox URL, applies the
-sandbox_rules-equivalent fixed date/companyId/reference conventions inline
-(see CLAUDE.md), and unwraps the sandbox's error envelope via
-app.sandbox_client.call. No pending-token confirm gate (unlike console-app)
--- this is a small, curated, demo-safe operation set, not a "call anything"
-console, so direct execution is appropriate.
+"""Curated, narrow set of endpoints the Mobile tab's screens need -- not the
+general catalog. Each one resolves a real sandbox URL via the same runtime
+EnvironmentStore the rest of console-app uses (so environment-switching
+applies here too), applies the fixed date/companyId/reference conventions
+inline (see CLAUDE.md / SANDBOX_NOTES.md), and unwraps the sandbox's error
+envelope via app.mobile_sandbox_client.call. No pending-token confirm gate
+(unlike the rest of console-app) -- this is a small, curated, demo-safe
+operation set, not a "call anything" console, so direct execution is
+appropriate, same reasoning as when this lived in the standalone
+mobile-simulator app.
 """
 
 from __future__ import annotations
@@ -12,11 +15,11 @@ from __future__ import annotations
 import random
 import string
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from app.config import settings
-from app.sandbox_client import call
+from app.mobile_sandbox_client import call
 
 router = APIRouter(prefix="/mobile")
 
@@ -37,9 +40,8 @@ def _company_account_id(account_id: str) -> str:
 
 def _account_short_name(raw: dict) -> str:
     """The literal string "null" comes back as ShortTitle on this sandbox
-    even for never-closed accounts -- reported upstream to the
-    composable-explorer team. Normalize it here so the bug is never visible
-    in this app to begin with."""
+    even for never-closed accounts. Normalize it here so the bug is never
+    visible in this app to begin with -- see SANDBOX_NOTES.md."""
     ext = raw.get("extensionData") or {}
     short_title = ext.get("ShortTitle")
     if short_title and short_title != "null":
@@ -81,10 +83,14 @@ class CreateLoanPayload(BaseModel):
 
 
 @router.post("/customer")
-async def create_customer(payload: CreatePartyPayload):
+async def create_customer(payload: CreatePartyPayload, request: Request):
     """Creates a demo party + opens & funds one current account in a single
-    call so the mobile app always has something to show immediately after
-    "Create Customer" -- mirrors the Building Guide's Account Onboarding Flow."""
+    call so the mobile tab always has something to show immediately after
+    "Create Demo Customer" -- mirrors the Building Guide's Account
+    Onboarding Flow. For reusing an existing party instead, the frontend
+    just pins one via the shared party session bar and calls the GET
+    endpoints below -- no separate "load existing" endpoint needed."""
+    env = request.app.state.environment
     first = payload.firstName or random.choice(_FIRST_NAMES)
     last = payload.lastName or random.choice(_LAST_NAMES)
 
@@ -116,7 +122,7 @@ async def create_customer(payload: CreatePartyPayload):
             "primary": True,
         }],
     }
-    party_result = await call("POST", f"{settings.party_base_url}/party/parties", json=party_body)
+    party_result = await call("POST", f"{env.base_url_for('Party')}/party/parties", json=party_body)
     if not party_result.ok:
         raise HTTPException(400, {"errors": party_result.errors})
     party_id = party_result.data.get("id")
@@ -130,7 +136,7 @@ async def create_customer(payload: CreatePartyPayload):
         "quotationReference": _ref("QUOT"),
     }
     account_result = await call(
-        "POST", f"{settings.deposits_base_url}/holdings/accounts/currentAccounts", json=account_body
+        "POST", f"{env.base_url_for('Deposits')}/holdings/accounts/currentAccounts", json=account_body
     )
     if not account_result.ok:
         return {"partyId": party_id, "firstName": first, "lastName": last, "accountId": None}
@@ -144,14 +150,15 @@ async def create_customer(payload: CreatePartyPayload):
         "creditCurrency": "USD",
         "paymentDescription": "Initial deposit",
     }
-    await call("POST", f"{settings.deposits_base_url}/order/payments/creditAccount", json=fund_body)
+    await call("POST", f"{env.base_url_for('Deposits')}/order/payments/creditAccount", json=fund_body)
 
     return {"partyId": party_id, "firstName": first, "lastName": last, "accountId": account_id}
 
 
 @router.get("/customer/{party_id}")
-async def get_customer(party_id: str):
-    result = await call("GET", f"{settings.party_base_url}/party/parties/{party_id}")
+async def get_customer(party_id: str, request: Request):
+    env = request.app.state.environment
+    result = await call("GET", f"{env.base_url_for('Party')}/party/parties/{party_id}")
     if not result.ok:
         raise HTTPException(404, {"errors": result.errors})
     body = result.data or {}
@@ -167,12 +174,15 @@ async def get_customer(party_id: str):
 
 
 @router.get("/customer/{party_id}/arrangements")
-async def get_arrangements(party_id: str):
+async def get_arrangements(party_id: str, request: Request):
     """Accounts + loans for the party, closed/pending-closure ones filtered
-    out (the same fix verified and applied in console-app's
-    discoverArrangements.ts -- closed arrangements never disappear from this
-    sandbox's own arrangements endpoint on their own)."""
-    result = await call("GET", f"{settings.holdings_base_url}/holdings/parties/{party_id}/arrangements")
+    out (the same fix verified and applied in discoverArrangements.ts --
+    closed arrangements never disappear from this sandbox's own
+    arrangements endpoint on their own). Works identically whether the
+    party was just created or is being reused from an existing ID pinned
+    in the party session bar."""
+    env = request.app.state.environment
+    result = await call("GET", f"{env.base_url_for('Holdings')}/holdings/parties/{party_id}/arrangements")
     if not result.ok:
         return {"accounts": [], "loans": []}
 
@@ -196,7 +206,7 @@ async def get_arrangements(party_id: str):
             loans.append(entry)
         else:
             balance_result = await call(
-                "GET", f"{settings.holdings_base_url}/holdings/accounts/{_company_account_id(account_id)}/balances"
+                "GET", f"{env.base_url_for('Holdings')}/holdings/accounts/{_company_account_id(account_id)}/balances"
             )
             if balance_result.ok:
                 items = (balance_result.data or {}).get("items") or []
@@ -208,9 +218,10 @@ async def get_arrangements(party_id: str):
 
 
 @router.get("/accounts/{account_id}/transactions")
-async def get_transactions(account_id: str):
+async def get_transactions(account_id: str, request: Request):
+    env = request.app.state.environment
     result = await call(
-        "GET", f"{settings.holdings_base_url}/holdings/accounts/{_company_account_id(account_id)}/transactions"
+        "GET", f"{env.base_url_for('Holdings')}/holdings/accounts/{_company_account_id(account_id)}/transactions"
     )
     if not result.ok:
         return {"items": []}
@@ -230,11 +241,12 @@ async def get_transactions(account_id: str):
 
 
 @router.get("/accounts/{account_id}/details")
-async def get_account_details(account_id: str):
+async def get_account_details(account_id: str, request: Request):
+    env = request.app.state.environment
     company_account_id = _company_account_id(account_id)
     details_result = await call(
         "GET",
-        f"{settings.holdings_base_url}/holdings/accounts/{company_account_id}/accountDetails",
+        f"{env.base_url_for('Holdings')}/holdings/accounts/{company_account_id}/accountDetails",
         params={"alternatekey": "accountId", "alternatename": "ACCOUNT"},
     )
     if not details_result.ok:
@@ -251,7 +263,8 @@ async def get_account_details(account_id: str):
 
 
 @router.post("/accounts")
-async def open_account(payload: OpenAccountPayload):
+async def open_account(payload: OpenAccountPayload, request: Request):
+    env = request.app.state.environment
     account_body = {
         "parties": [{"partyId": payload.partyId, "partyRole": "OWNER"}],
         "productId": "CurrentAccount",
@@ -260,7 +273,7 @@ async def open_account(payload: OpenAccountPayload):
         "openingDate": settings.system_date,
         "quotationReference": _ref("QUOT"),
     }
-    result = await call("POST", f"{settings.deposits_base_url}/holdings/accounts/currentAccounts", json=account_body)
+    result = await call("POST", f"{env.base_url_for('Deposits')}/holdings/accounts/currentAccounts", json=account_body)
     if not result.ok:
         raise HTTPException(400, {"errors": result.errors})
     account_id = result.data.get("accountId") or result.data.get("accountReference")
@@ -274,13 +287,14 @@ async def open_account(payload: OpenAccountPayload):
             "creditCurrency": "USD",
             "paymentDescription": "Initial deposit",
         }
-        await call("POST", f"{settings.deposits_base_url}/order/payments/creditAccount", json=fund_body)
+        await call("POST", f"{env.base_url_for('Deposits')}/order/payments/creditAccount", json=fund_body)
 
     return {"accountId": account_id}
 
 
 @router.post("/transfer")
-async def transfer(payload: TransferPayload):
+async def transfer(payload: TransferPayload, request: Request):
+    env = request.app.state.environment
     body = {
         "paymentTransactionReference": _ref("TRF"),
         "paymentValueDate": settings.system_date,
@@ -290,14 +304,15 @@ async def transfer(payload: TransferPayload):
         "paymentAmount": payload.amount,
         "paymentDescription": payload.description,
     }
-    result = await call("POST", f"{settings.deposits_base_url}/order/payments/internalTransfer", json=body)
+    result = await call("POST", f"{env.base_url_for('Deposits')}/order/payments/internalTransfer", json=body)
     if not result.ok:
         raise HTTPException(400, {"errors": result.errors})
     return {"ok": True}
 
 
 @router.post("/loans")
-async def create_loan(payload: CreateLoanPayload):
+async def create_loan(payload: CreateLoanPayload, request: Request):
+    env = request.app.state.environment
     body = {
         "parties": [{"partyId": payload.partyId, "partyRole": "OWNER"}],
         "productId": "ConsumerLoan",
@@ -311,7 +326,7 @@ async def create_loan(payload: CreateLoanPayload):
         "repaymentAccount": payload.settlementAccountId,
     }
     result = await call(
-        "POST", f"{settings.lending_base_url}/holdings/lending/consumerLoans", json=body,
+        "POST", f"{env.base_url_for('Lending')}/holdings/lending/consumerLoans", json=body,
         timeout=settings.long_request_timeout_seconds,
     )
     if not result.ok:
@@ -321,12 +336,13 @@ async def create_loan(payload: CreateLoanPayload):
 
 
 @router.get("/loans/{loan_id}/schedule")
-async def get_loan_schedule(loan_id: str):
+async def get_loan_schedule(loan_id: str, request: Request):
     # get-loan-details (a separate enquiry) returns TGVCP-007 on this
-    # sandbox per CLAUDE.md -- payment schedule is used instead, it works.
-    # Response key is "paymentSchedules" (not "items"), amounts are
-    # formatted strings with thousands separators -- both discovered live.
-    result = await call("GET", f"{settings.lending_base_url}/holdings/lending/{loan_id}/paymentSchedule")
+    # sandbox -- payment schedule is used instead, it works. Response key
+    # is "paymentSchedules" (not "items"), amounts are formatted strings
+    # with thousands separators -- both discovered live.
+    env = request.app.state.environment
+    result = await call("GET", f"{env.base_url_for('Lending')}/holdings/lending/{loan_id}/paymentSchedule")
     if not result.ok:
         return {"items": []}
     raw = (result.data or {}).get("paymentSchedules", [])

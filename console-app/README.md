@@ -6,11 +6,13 @@ operations across Party, Deposits, Holdings, and Lending, or describe what
 you want in plain English and let an LLM propose the matching API call --
 nothing ever fires against the real sandbox until you explicitly confirm it.
 
-Part of the [composable-sandbox-gui](../README.md) monorepo -- see the root
-README for the two-app architecture and how this fits alongside the
-[mobile-simulator](../mobile-simulator/), and
-[`../SANDBOX_NOTES.md`](../SANDBOX_NOTES.md) for the sandbox-specific rules
-baked into this app's `sandbox_rules.py` and `known_issues.py`.
+Also includes a **Mobile** tab -- a phone-frame mobile banking demo UI
+backed by the same sandbox, with a settings-driven look-and-feel skin
+picker -- sharing this app's login and party session rather than being a
+separate app/deployment.
+
+See [`../SANDBOX_NOTES.md`](../SANDBOX_NOTES.md) for the sandbox-specific
+rules baked into this app's `sandbox_rules.py` and `known_issues.py`.
 
 ## Architecture
 
@@ -49,11 +51,18 @@ OpenAI (gpt-4o-mini by default)
   `CLAUDE.md` (broken endpoints, non-obvious required fields, response
   shapes that differ from the spec) surface directly in the operation
   detail and response views via `backend/app/catalog/known_issues.py`.
+- **Mobile tab**: a curated, direct-execute set of endpoints
+  (`backend/app/api/mobile_routes.py`, mounted at `/api/mobile`) drives a
+  phone-frame demo UI (`frontend/src/pages/MobileSimulator.tsx`). Reuses
+  the same party session as the other tabs (`context/PartyContext.tsx`) --
+  pin an existing party ID in the top bar, or create a new demo party from
+  the Mobile tab itself, and it's picked up everywhere. No confirm gate on
+  this tab's own endpoints: it's a small, curated, demo-safe operation set,
+  not the general catalog.
 
 ## Run it locally
 
-From the **repo root** (this app is one of two services in the top-level
-compose file):
+From the **repo root**:
 
 ```bash
 docker compose up -d --build console-backend console-frontend
@@ -61,9 +70,6 @@ docker compose up -d --build console-backend console-frontend
 
 Open **http://localhost:8091**. No password gate locally (`AUTH_MODE=none`
 by default) -- see [Auth](#auth) below.
-
-To run *only* this app in isolation, there's also a standalone
-`console-app/docker-compose.yml` (`cd console-app && docker compose up -d --build`).
 
 ### AI Assistant setup
 

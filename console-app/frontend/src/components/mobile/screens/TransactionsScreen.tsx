@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { api } from "../../api/client";
-import type { TransactionInfo } from "../../types";
+import { api } from "../../../api/client";
+import type { TransactionInfo } from "../../../types/mobile";
 
 interface Props {
   accountId: string;
@@ -14,7 +14,7 @@ export function TransactionsScreen({ accountId, onBack }: Props) {
   useEffect(() => {
     setLoading(true);
     api
-      .getTransactions(accountId)
+      .getMobileTransactions(accountId)
       .then((r) => setItems(r.items))
       .finally(() => setLoading(false));
   }, [accountId]);

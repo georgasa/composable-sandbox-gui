@@ -1,7 +1,7 @@
-import { useSession } from "../../context/SessionContext";
+import { useMobileSession } from "../../../context/MobileSessionContext";
 
 export function LoginScreen() {
-  const { createCustomer, loading, error } = useSession();
+  const { createCustomer, loading, error } = useMobileSession();
 
   return (
     <div className="screen screen-center">
@@ -12,6 +12,9 @@ export function LoginScreen() {
       <button className="btn btn-primary btn-block" onClick={createCustomer} disabled={loading}>
         {loading ? "Creating..." : "Create Demo Customer"}
       </button>
+      <div className="login-subtitle">
+        Already have a party ID? Enter it in the party bar above and click Set -- this tab picks it up automatically.
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useSession } from "../../context/SessionContext";
+import { useMobileSession } from "../../../context/MobileSessionContext";
 
 function formatCurrency(amount: number, currency: string): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: currency || "USD" }).format(amount || 0);
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function DashboardScreen({ onSelectAccount }: Props) {
-  const { customer, accounts, loading, refresh, openAccount } = useSession();
+  const { customer, accounts, loading, refresh, openAccount } = useMobileSession();
 
   useEffect(() => {
     refresh();

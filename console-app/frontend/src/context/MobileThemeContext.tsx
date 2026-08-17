@@ -6,7 +6,7 @@ export interface Skin {
   description: string;
 }
 
-// Generic style presets, no real bank names/logos -- see tokens.css.
+// Generic style presets, no real bank names/logos -- see styles/mobile-tokens.css.
 export const SKINS: Skin[] = [
   { id: "minimal-light", label: "Minimal Light", description: "Clean, airy, blue accent -- neobank feel" },
   { id: "midnight-dark", label: "Midnight Dark", description: "Dark navy, single accent -- fintech dark-mode feel" },
@@ -16,31 +16,36 @@ export const SKINS: Skin[] = [
 
 const STORAGE_KEY = "mobile-sim-skin";
 
-interface ThemeContextValue {
+interface MobileThemeContextValue {
   skinId: string;
   setSkinId: (id: string) => void;
 }
 
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+const MobileThemeContext = createContext<MobileThemeContextValue | null>(null);
 
 function getInitialSkin(): string {
   const stored = localStorage.getItem(STORAGE_KEY);
   return SKINS.some((s) => s.id === stored) ? stored! : SKINS[0].id;
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
+export function MobileThemeProvider({ children }: { children: ReactNode }) {
   const [skinId, setSkinId] = useState(getInitialSkin);
 
+  // Set on <html> just like console-app's own light/dark `data-theme` toggle
+  // (App.tsx) -- safe to coexist because every mobile-skin CSS custom
+  // property is --mob- prefixed (see mobile-tokens.css) and every colliding
+  // class name is scoped under .mobile-tab-content (see mobile.css), so
+  // this never leaks into the Catalog/Assistant/Flows tabs.
   useEffect(() => {
     document.documentElement.setAttribute("data-skin", skinId);
     localStorage.setItem(STORAGE_KEY, skinId);
   }, [skinId]);
 
-  return <ThemeContext.Provider value={{ skinId, setSkinId }}>{children}</ThemeContext.Provider>;
+  return <MobileThemeContext.Provider value={{ skinId, setSkinId }}>{children}</MobileThemeContext.Provider>;
 }
 
-export function useTheme(): ThemeContextValue {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
+export function useMobileTheme(): MobileThemeContextValue {
+  const ctx = useContext(MobileThemeContext);
+  if (!ctx) throw new Error("useMobileTheme must be used within MobileThemeProvider");
   return ctx;
 }

@@ -46,7 +46,7 @@ export function AuthGate({ children }: Props) {
   return (
     <div className="auth-gate">
       <form className="auth-gate-card" onSubmit={handleSubmit}>
-        <div className="auth-gate-title">Composable Sandbox Demo</div>
+        <div className="auth-gate-title">Composable Hands-on Lab</div>
         <div className="auth-gate-subtitle">Enter the demo password to continue.</div>
         <input
           className="field-input"

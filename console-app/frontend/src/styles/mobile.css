@@ -1,22 +1,36 @@
-* {
-  box-sizing: border-box;
+/* Styles for the Mobile tab's phone-frame simulator. Scoped under
+.mobile-tab-content wherever the class name would otherwise collide with
+console-app's own styles.css (.btn, .btn-primary, .empty-state,
+.field-label, .icon-btn) -- everything else here is a name unique to this
+tab, so it's safe unscoped. All custom properties use the --mob- prefix
+(see mobile-tokens.css) for the same reason: console-app's own theme
+already defines --bg/--border/--radius/--text/--text-dim on :root, and an
+unprefixed name here would silently override those app-wide. */
+
+.mobile-tab-content {
+  /* .main (styles.css) is a 2-column grid sized for Catalog's
+     360px-sidebar + content layout -- without this, the Mobile tab would
+     only render into that first 360px column instead of using the full
+     width, and without height: 100% it wouldn't fill .main's
+     grid-template-rows: minmax(0, 1fr) row either (same "height:100% needs
+     a definite row size to resolve against" issue already solved once for
+     .main's own children -- see the comment there). */
+  grid-column: 1 / -1;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--mob-bg);
+  color: var(--mob-text);
+  font-family: var(--mob-font-body);
 }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-}
-
-button,
-input,
-select {
+.mobile-tab-content button,
+.mobile-tab-content input,
+.mobile-tab-content select {
   font-family: inherit;
 }
 
-.page-wrap {
-  min-height: 100vh;
+.mobile-page-wrap {
+  min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,7 +46,7 @@ select {
 .phone {
   width: 360px;
   height: 720px;
-  background: var(--card);
+  background: var(--mob-card);
   border-radius: 40px;
   border: 10px solid #111;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
@@ -42,18 +56,18 @@ select {
 }
 
 .phone-statusbar {
-  background: var(--header-bg);
-  color: var(--on-header);
+  background: var(--mob-header-bg);
+  color: var(--mob-on-header);
   padding: 10px 20px 6px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 13px;
   font-weight: 600;
-  font-family: var(--font-heading);
+  font-family: var(--mob-font-heading);
 }
 
-.icon-btn {
+.mobile-tab-content .icon-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -64,13 +78,13 @@ select {
 .phone-screen {
   flex: 1;
   overflow-y: auto;
-  background: var(--bg);
+  background: var(--mob-bg);
 }
 
 .phone-navbar {
   display: flex;
-  border-top: 1px solid var(--border);
-  background: var(--card);
+  border-top: 1px solid var(--mob-border);
+  background: var(--mob-card);
 }
 
 .nav-btn {
@@ -83,12 +97,12 @@ select {
   align-items: center;
   gap: 2px;
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--mob-text-dim);
   cursor: pointer;
 }
 
 .nav-btn.active {
-  color: var(--primary);
+  color: var(--mob-primary);
   font-weight: 600;
 }
 
@@ -119,7 +133,7 @@ select {
 }
 
 .screen-title {
-  font-family: var(--font-heading);
+  font-family: var(--mob-font-heading);
   font-weight: 700;
   font-size: 16px;
 }
@@ -127,7 +141,7 @@ select {
 .back-btn {
   background: none;
   border: none;
-  color: var(--primary);
+  color: var(--mob-primary);
   font-weight: 600;
   cursor: pointer;
   font-size: 13px;
@@ -139,32 +153,32 @@ select {
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--text-dim);
+  color: var(--mob-text-dim);
 }
 
-.empty-state {
-  color: var(--text-dim);
+.mobile-tab-content .empty-state {
+  color: var(--mob-text-dim);
   font-size: 13px;
   text-align: center;
   padding: 24px 0;
 }
 
 .error-banner {
-  background: color-mix(in srgb, var(--negative) 12%, transparent);
-  color: var(--negative);
-  border: 1px solid var(--negative);
-  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--mob-negative) 12%, transparent);
+  color: var(--mob-negative);
+  border: 1px solid var(--mob-negative);
+  border-radius: var(--mob-radius-sm);
   padding: 10px 12px;
   font-size: 12px;
 }
 
 /* ---------- buttons / forms ---------- */
 
-.btn {
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  border-radius: var(--radius-sm);
+.mobile-tab-content .btn {
+  border: 1px solid var(--mob-border);
+  background: var(--mob-card);
+  color: var(--mob-text);
+  border-radius: var(--mob-radius-sm);
   padding: 12px 16px;
   font-size: 14px;
   font-weight: 600;
@@ -175,20 +189,20 @@ select {
   width: 100%;
 }
 
-.btn-primary {
-  background: var(--primary);
-  color: var(--on-primary, #fff);
+.mobile-tab-content .btn-primary {
+  background: var(--mob-primary);
+  color: var(--mob-on-primary, #fff);
   border: none;
 }
 
-.btn-primary:disabled {
+.mobile-tab-content .btn-primary:disabled {
   opacity: 0.6;
   cursor: default;
 }
 
 .btn-secondary {
-  background: var(--primary-dim);
-  color: var(--primary);
+  background: var(--mob-primary-dim);
+  color: var(--mob-primary);
   border: none;
 }
 
@@ -198,18 +212,18 @@ select {
   gap: 8px;
 }
 
-.field-label {
+.mobile-tab-content .field-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-dim);
+  color: var(--mob-text-dim);
   margin-top: 6px;
 }
 
 .text-input {
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--mob-border);
+  background: var(--mob-card);
+  color: var(--mob-text);
+  border-radius: var(--mob-radius-sm);
   padding: 10px 12px;
   font-size: 14px;
 }
@@ -221,14 +235,14 @@ select {
 }
 
 .login-title {
-  font-family: var(--font-heading);
+  font-family: var(--mob-font-heading);
   font-size: 20px;
   font-weight: 700;
 }
 
 .login-subtitle {
   font-size: 13px;
-  color: var(--text-dim);
+  color: var(--mob-text-dim);
   max-width: 260px;
 }
 
@@ -240,11 +254,11 @@ select {
 
 .hello-label {
   font-size: 13px;
-  color: var(--text-dim);
+  color: var(--mob-text-dim);
 }
 
 .hello-name {
-  font-family: var(--font-heading);
+  font-family: var(--mob-font-heading);
   font-size: 20px;
   font-weight: 700;
 }
@@ -256,9 +270,9 @@ select {
 }
 
 .account-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background: var(--mob-card);
+  border: 1px solid var(--mob-border);
+  border-radius: var(--mob-radius);
   padding: 12px 14px;
   cursor: pointer;
 }
@@ -271,14 +285,14 @@ select {
 }
 
 .account-card-id {
-  color: var(--text-dim);
+  color: var(--mob-text-dim);
   font-size: 12px;
 }
 
 .account-card-balance {
   margin-top: 4px;
   font-weight: 700;
-  color: var(--positive);
+  color: var(--mob-positive);
 }
 
 /* ---------- transactions ---------- */
@@ -293,7 +307,7 @@ select {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--mob-border);
   padding-bottom: 10px;
 }
 
@@ -304,7 +318,7 @@ select {
 
 .txn-date {
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--mob-text-dim);
 }
 
 .txn-amount {
@@ -313,11 +327,11 @@ select {
 }
 
 .txn-amount.positive {
-  color: var(--positive);
+  color: var(--mob-positive);
 }
 
 .txn-amount.negative {
-  color: var(--negative);
+  color: var(--mob-negative);
 }
 
 /* ---------- loan schedule ---------- */
@@ -332,13 +346,13 @@ select {
   display: flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--mob-border);
   padding-bottom: 8px;
   font-size: 12px;
 }
 
 .schedule-num {
-  color: var(--text-dim);
+  color: var(--mob-text-dim);
   width: 28px;
 }
 
@@ -353,7 +367,7 @@ select {
 /* ---------- profile ---------- */
 
 .profile-name {
-  font-family: var(--font-heading);
+  font-family: var(--mob-font-heading);
   font-size: 18px;
   font-weight: 700;
 }
@@ -368,12 +382,12 @@ select {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--mob-border);
   padding-bottom: 6px;
 }
 
 .profile-label {
-  color: var(--text-dim);
+  color: var(--mob-text-dim);
 }
 
 /* ---------- settings / skin picker ---------- */
@@ -388,23 +402,23 @@ select {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: var(--card, #fff);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
+  background: var(--mob-card, #fff);
+  border: 1.5px solid var(--mob-border);
+  border-radius: var(--mob-radius);
   padding: 12px;
   cursor: pointer;
   text-align: left;
 }
 
 .skin-card.active {
-  border-color: var(--primary);
+  border-color: var(--mob-primary);
 }
 
 .skin-swatch {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: var(--header-bg);
+  background: var(--mob-header-bg);
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
@@ -416,7 +430,7 @@ select {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--mob-primary);
   border: 2px solid #fff;
 }
 
@@ -431,49 +445,33 @@ select {
 .skin-card-label {
   font-weight: 700;
   font-size: 13px;
-  font-family: var(--font-heading);
+  font-family: var(--mob-font-heading);
 }
 
 .skin-card-desc {
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--mob-text-dim);
 }
 
 .skin-check {
-  color: var(--primary);
+  color: var(--mob-primary);
   font-weight: 700;
 }
 
-/* ---------- auth gate ---------- */
+/* ---------- reuse-party bar ---------- */
 
-.auth-gate {
-  min-height: 100vh;
+.mobile-party-bar {
   display: flex;
+  gap: 8px;
   align-items: center;
-  justify-content: center;
-  background: var(--bg);
+  padding: 10px 14px;
+  background: var(--mob-card-alt);
+  border-bottom: 1px solid var(--mob-border);
+  font-size: 12px;
 }
 
-.auth-gate-card {
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 28px 24px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-}
-
-.auth-gate-title {
-  font-family: var(--font-heading);
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.auth-gate-subtitle {
-  font-size: 13px;
-  color: var(--text-dim);
-  margin-top: -6px;
+.mobile-party-bar .text-input {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 12px;
 }

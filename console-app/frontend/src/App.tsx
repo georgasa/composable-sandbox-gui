@@ -4,11 +4,12 @@ import type { ConfigResponse } from "./api/types";
 import { CatalogBrowser } from "./pages/CatalogBrowser";
 import { Assistant } from "./pages/Assistant";
 import { Flows } from "./pages/Flows";
+import { MobileSimulator } from "./pages/MobileSimulator";
 import { EnvironmentModal } from "./components/EnvironmentModal";
 import { PartySessionBar } from "./components/PartySessionBar";
 import { AuthGate } from "./components/AuthGate";
 
-type Tab = "catalog" | "assistant" | "flows";
+type Tab = "catalog" | "assistant" | "flows" | "mobile";
 type Theme = "light" | "dark";
 
 function getInitialTheme(): Theme {
@@ -96,6 +97,9 @@ function AppShell() {
         <button className={`tab${tab === "flows" ? " active" : ""}`} onClick={() => setTab("flows")}>
           Flows
         </button>
+        <button className={`tab${tab === "mobile" ? " active" : ""}`} onClick={() => setTab("mobile")}>
+          Mobile
+        </button>
       </nav>
 
       <PartySessionBar />
@@ -104,6 +108,7 @@ function AppShell() {
         {tab === "catalog" && <CatalogBrowser />}
         {tab === "assistant" && <Assistant />}
         {tab === "flows" && <Flows />}
+        {tab === "mobile" && <MobileSimulator />}
       </div>
     </div>
   );

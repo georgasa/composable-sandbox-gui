@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useSession } from "../../context/SessionContext";
+import { useMobileSession } from "../../../context/MobileSessionContext";
 
 export function TransferScreen() {
-  const { accounts, transfer, loading } = useSession();
+  const { accounts, transfer, loading } = useMobileSession();
   const [fromId, setFromId] = useState("");
   const [toId, setToId] = useState("");
   const [amount, setAmount] = useState("");
