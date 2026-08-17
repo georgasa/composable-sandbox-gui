@@ -14,6 +14,7 @@ FROM nginx:1.27-alpine
 # infra/provision.sh) to the backend Container App's internal FQDN.
 ENV BACKEND_HOST=backend
 ENV BACKEND_PORT=8000
+ENV BACKEND_SCHEME=http
 COPY console-app/frontend/nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY console-app/frontend/docker-entrypoint.d/05-set-resolver.envsh /docker-entrypoint.d/05-set-resolver.envsh
 RUN chmod +x /docker-entrypoint.d/05-set-resolver.envsh

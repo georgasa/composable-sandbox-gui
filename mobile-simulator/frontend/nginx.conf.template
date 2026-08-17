@@ -14,6 +14,10 @@ server {
     # crashes on startup if BACKEND_HOST isn't resolvable yet).
     resolver ${RESOLVER_IP} valid=10s;
 
+    # proxy_ssl_server_name on -- see console-app/frontend/nginx.conf.template
+    # for why (SNI for the TLS-layer routing Envoy also does on Azure).
+    proxy_ssl_server_name on;
+
     # No URI on proxy_pass here -- see console-app/frontend/nginx.conf.template
     # for why (a variable in proxy_pass disables location-prefix rewriting,
     # so the original /api/... request URI passes through unchanged, which
@@ -25,12 +29,17 @@ server {
     # console-app/frontend/nginx.conf.template for why (Container Apps'
     # internal ingress routes by Host header; forwarding the frontend's own
     # Host makes Envoy unable to match any app and return a generic 404).
+    # BACKEND_SCHEME (http locally, https on Azure) -- see
+    # console-app/frontend/nginx.conf.template for why (Container Apps'
+    # internal ingress is HTTPS-only; a plain http:// proxy_pass gets a
+    # redirect nginx can't auto-rewrite here, and it leaks straight to the
+    # browser as a CORS-blocked cross-origin request to the internal FQDN).
     location /api/ {
         set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_set_header Host ${BACKEND_HOST};
-        proxy_pass http://$backend;
+        proxy_pass ${BACKEND_SCHEME}://$backend;
         proxy_read_timeout 120s;
     }
 
@@ -39,7 +48,7 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_set_header Host ${BACKEND_HOST};
-        proxy_pass http://$backend;
+        proxy_pass ${BACKEND_SCHEME}://$backend;
     }
 
     location /assets/ {

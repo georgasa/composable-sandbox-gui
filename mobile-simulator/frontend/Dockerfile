@@ -11,6 +11,7 @@ RUN npm run build
 FROM nginx:1.27-alpine
 ENV BACKEND_HOST=mobile-backend
 ENV BACKEND_PORT=8000
+ENV BACKEND_SCHEME=http
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY docker-entrypoint.d/05-set-resolver.envsh /docker-entrypoint.d/05-set-resolver.envsh
 RUN chmod +x /docker-entrypoint.d/05-set-resolver.envsh

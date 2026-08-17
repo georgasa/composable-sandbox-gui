@@ -23,6 +23,13 @@ server {
     # time this compose stack came up.
     resolver ${RESOLVER_IP} valid=10s;
 
+    # proxy_ssl_server_name on: required for SNI when proxy_pass uses https
+    # with a variable host -- without it nginx doesn't send the hostname in
+    # the TLS handshake, and Envoy (which also routes at the TLS layer by
+    # SNI on Azure) can't tell which internal app to hand the connection to.
+    # No-op when BACKEND_SCHEME=http (local).
+    proxy_ssl_server_name on;
+
     # No URI on proxy_pass here (deliberately) -- when proxy_pass's target
     # includes a variable, nginx does NOT do its usual "replace the matched
     # location prefix" rewriting; it passes the original request URI through
@@ -48,12 +55,22 @@ server {
     # exactly like a real 404, cost real time to trace back to the Host
     # header. Invisible locally: plain Docker networking doesn't route by
     # Host header at all, so this only breaks once actually on Azure.
+    #
+    # BACKEND_SCHEME (http locally, https on Azure): Container Apps'
+    # internal ingress defaults to allowInsecure=false, i.e. HTTPS-only --
+    # a plain http:// proxy_pass gets redirected to the https:// version of
+    # the SAME internal hostname, and because proxy_pass has a variable in
+    # it here (see above), nginx does NOT auto-rewrite that Location header
+    # the way it normally would -- the raw internal-only hostname leaked
+    # straight through to the browser, which then tried to fetch it
+    # directly and got CORS-blocked. Cost real time to trace: looked like a
+    # CORS bug, was actually a scheme mismatch one hop upstream.
     location /api/ {
         set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_set_header Host ${BACKEND_HOST};
-        proxy_pass http://$backend;
+        proxy_pass ${BACKEND_SCHEME}://$backend;
         proxy_read_timeout 120s;
     }
 
@@ -62,7 +79,7 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_set_header Host ${BACKEND_HOST};
-        proxy_pass http://$backend;
+        proxy_pass ${BACKEND_SCHEME}://$backend;
     }
 
     # Vite content-hashes every filename under /assets/ (e.g.
