@@ -135,7 +135,17 @@ button {
 /* ---------- shell ---------- */
 
 .app-shell {
-  min-height: 100%;
+  /* height (not min-height) + overflow: hidden -- without a hard cap here,
+     a tall child (e.g. the Mobile tab's fixed-height phone frame) just
+     grows this box past the viewport instead of scrolling internally, and
+     the whole PAGE scrolls -- carrying the tab nav bar and party bar off
+     the top with it, with nothing to scroll back to reveal them again.
+     .main below already has the matching "minmax(0, 1fr) + children's own
+     overflow-y: auto" setup to be the one thing that scrolls; it just
+     needs an ancestor chain with definite (not min-) heights to resolve
+     against, same principle as that fix, one level up. */
+  height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }

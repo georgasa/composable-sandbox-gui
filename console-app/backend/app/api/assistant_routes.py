@@ -38,7 +38,7 @@ async def assistant_query(req: AssistantQuery, request: Request):
     except LLMError as exc:
         return {
             "matched": False,
-            "message": f"The local assistant model is unavailable ({exc}). "
+            "message": f"The AI assistant is unavailable ({exc}). "
                        f"You can still use the catalog browser directly.",
             "candidates": [c.to_summary().model_dump(by_alias=True) for c in candidates],
         }
