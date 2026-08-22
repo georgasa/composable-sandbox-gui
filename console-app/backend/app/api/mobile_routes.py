@@ -313,6 +313,16 @@ async def transfer(payload: TransferPayload, request: Request):
 @router.post("/loans")
 async def create_loan(payload: CreateLoanPayload, request: Request):
     env = request.app.state.environment
+    # disbursementAccount/repaymentAccount use the composite
+    # "deposits|{companyId}|{accountId}" reference format, NOT a plain
+    # account id -- matches Sandbox/03-demoflow-lending.py (100%-verified)
+    # exactly. A plain id was tried live and superficially "worked" (loan
+    # created, auto-disbursed), but it's not the documented/canonical
+    # format and the same live session hit "NO CONSTANT OR LINEAR TYPE ON
+    # CALL CONTRACT" with it -- repaymentStartDate/repaymentFrequency
+    # (also in the verified script, missing here before) are the likely
+    # fix for that specific error.
+    settlement_ref = f"deposits|{settings.company_id}|{payload.settlementAccountId}"
     body = {
         "parties": [{"partyId": payload.partyId, "partyRole": "OWNER"}],
         "productId": "ConsumerLoan",
@@ -321,9 +331,11 @@ async def create_loan(payload: CreateLoanPayload, request: Request):
         "loanAmount": payload.amount,
         "loanTerm": payload.term,
         "openingDate": settings.system_date,
+        "repaymentStartDate": settings.system_date,
+        "repaymentFrequency": "Monthly",
         "quotationReference": _ref("QUOT"),
-        "disbursementAccount": payload.settlementAccountId,
-        "repaymentAccount": payload.settlementAccountId,
+        "disbursementAccount": settlement_ref,
+        "repaymentAccount": settlement_ref,
     }
     result = await call(
         "POST", f"{env.base_url_for('Lending')}/holdings/lending/consumerLoans", json=body,

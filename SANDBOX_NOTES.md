@@ -31,9 +31,15 @@ self-contained.
 4. **Account creation returns `{"accountId": "..."}`**, not
    `accountReference`/`id` (loan creation *does* use `accountReference`).
 5. **Consumer loan creation requires `disbursementAccount` +
-   `repaymentAccount`** (plain account IDs) or fails with
-   `"Payout Account is Mandatory."` -- not obvious from the required-fields
-   list alone. Loans **auto-disburse on creation**, no separate disburse call.
+   `repaymentAccount`**, formatted as the composite reference
+   `"deposits|{companyId}|{accountId}"` (e.g.
+   `"deposits|GB0010001|1013718397"`) -- **not** a plain account ID, per
+   the verified `Sandbox/03-demoflow-lending.py`. Omitting them fails with
+   `"Payout Account is Mandatory."`; a still-missing `repaymentStartDate`/
+   `repaymentFrequency` (`"Monthly"`) separately surfaces as
+   `"NO CONSTANT OR LINEAR TYPE ON CALL CONTRACT"`. None of these four
+   fields are in the schema's `required` list. Loans **auto-disburse on
+   creation**, no separate disburse call.
 6. **Loan payment schedule** (`GET /holdings/lending/{accountId}/paymentSchedule`)
    response key is `paymentSchedules` (not `items`), amounts are formatted
    strings with thousands separators. `get-loan-details` is a separate,
