@@ -3,7 +3,14 @@ import { api } from "../api/client";
 import type { CatalogResponse } from "../api/types";
 import { OperationWorkbench } from "../components/OperationWorkbench";
 
-export function CatalogBrowser() {
+interface Props {
+  /** Set by the Assistant tab's "View in Catalog" link -- see App.tsx for
+   * why this is {opKey, nonce} rather than a bare opKey (re-clicking the
+   * same opKey after browsing elsewhere needs a value change to re-fire). */
+  focus?: { opKey: string; nonce: number } | null;
+}
+
+export function CatalogBrowser({ focus }: Props) {
   const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
   const [search, setSearch] = useState("");
   const [selectedOpKey, setSelectedOpKey] = useState<string | null>(null);
@@ -69,6 +76,33 @@ export function CatalogBrowser() {
     setExpandedTags(tagKeys);
   }, [search, filtered]);
 
+  // "View in Catalog" from the Assistant tab -- find which service/tag
+  // group the operation lives under, expand straight to it, select it, and
+  // scroll it into view. Keyed off `focus` (an {opKey, nonce} pair, not a
+  // bare opKey) so re-clicking the same link still re-triggers this after
+  // the user has browsed elsewhere in the meantime.
+  useEffect(() => {
+    if (!focus || !catalog) return;
+    for (const [service, tags] of Object.entries(catalog.services)) {
+      for (const [tag, ops] of Object.entries(tags)) {
+        if (!ops.some((op) => op.opKey === focus.opKey)) continue;
+        setSearch(""); // an active filter could otherwise hide the target op
+        setExpandedServices((prev) => new Set(prev).add(service));
+        setExpandedTags((prev) => new Set(prev).add(`${service}::${tag}`));
+        setSelectedOpKey(focus.opKey);
+        // deferred: the op-item only exists in the DOM once the expansion
+        // above has actually rendered
+        setTimeout(() => {
+          document.querySelector(`[data-op-key="${CSS.escape(focus.opKey)}"]`)?.scrollIntoView({
+            block: "center",
+            behavior: "smooth",
+          });
+        }, 50);
+        return;
+      }
+    }
+  }, [focus, catalog]);
+
   return (
     <>
       <div className="catalog-panel">
@@ -117,6 +151,7 @@ export function CatalogBrowser() {
                           ops.map((op) => (
                             <button
                               key={op.opKey}
+                              data-op-key={op.opKey}
                               className={`op-item${op.opKey === selectedOpKey ? " selected" : ""}`}
                               onClick={() => setSelectedOpKey(op.opKey)}
                               title={op.summary}

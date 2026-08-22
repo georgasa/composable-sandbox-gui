@@ -8,7 +8,11 @@ type Message =
   | { role: "user"; text: string }
   | { role: "assistant"; response: AssistantResponse };
 
-export function Assistant() {
+interface Props {
+  onViewInCatalog: (opKey: string) => void;
+}
+
+export function Assistant({ onViewInCatalog }: Props) {
   const { activePartyId } = useParty();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -55,7 +59,7 @@ export function Assistant() {
             {m.role === "user" ? (
               <div className="chat-bubble">{m.text}</div>
             ) : m.response.matched ? (
-              <ProposalCard initial={m.response} />
+              <ProposalCard initial={m.response} onViewInCatalog={onViewInCatalog} />
             ) : (
               <div className="chat-bubble">
                 {m.response.message}
@@ -69,6 +73,17 @@ export function Assistant() {
                             {c.method}
                           </span>
                           {c.summary}
+                          <span style={{ opacity: 0.6 }}>
+                            {" "}
+                            — {c.service} · {c.tags[0] || "General"}
+                          </span>{" "}
+                          <button
+                            className="link-btn"
+                            onClick={() => onViewInCatalog(c.opKey)}
+                            title="Open this operation in the Catalog tab"
+                          >
+                            View in Catalog →
+                          </button>
                         </li>
                       ))}
                     </ul>

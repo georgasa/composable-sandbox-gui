@@ -31,6 +31,18 @@ function AppShell() {
   const [config, setConfig] = useState<ConfigResponse | null>(null);
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [envModalOpen, setEnvModalOpen] = useState(false);
+  // Set by the Assistant tab's "View in Catalog" link -- CatalogBrowser
+  // watches this to expand to and select the matching operation. The nonce
+  // guarantees the effect fires even when re-clicking the link for the
+  // SAME opKey after having browsed elsewhere in the catalog meanwhile
+  // (an object identity/value change is needed for the effect to re-run;
+  // opKey alone wouldn't change in that case).
+  const [catalogFocus, setCatalogFocus] = useState<{ opKey: string; nonce: number } | null>(null);
+
+  const viewInCatalog = (opKey: string) => {
+    setCatalogFocus((prev) => ({ opKey, nonce: (prev?.nonce ?? 0) + 1 }));
+    setTab("catalog");
+  };
 
   const loadConfig = () => {
     api.getConfig().then(setConfig).catch(() => setConfig(null));
@@ -105,8 +117,8 @@ function AppShell() {
       <PartySessionBar />
 
       <div className="main">
-        {tab === "catalog" && <CatalogBrowser />}
-        {tab === "assistant" && <Assistant />}
+        {tab === "catalog" && <CatalogBrowser focus={catalogFocus} />}
+        {tab === "assistant" && <Assistant onViewInCatalog={viewInCatalog} />}
         {tab === "flows" && <Flows />}
         {tab === "mobile" && <MobileSimulator />}
       </div>

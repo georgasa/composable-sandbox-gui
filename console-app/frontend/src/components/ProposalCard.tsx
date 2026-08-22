@@ -11,7 +11,12 @@ import { seedPartyId } from "../utils/seedParty";
  * same ParamForm / ConfirmDialog / ResponseViewer as the catalog browser --
  * there is only one execution pipeline in the app, whether you got here by
  * typing a sentence or by clicking through the catalog tree. */
-export function ProposalCard({ initial }: { initial: AssistantMatchedResponse }) {
+interface Props {
+  initial: AssistantMatchedResponse;
+  onViewInCatalog: (opKey: string) => void;
+}
+
+export function ProposalCard({ initial, onViewInCatalog }: Props) {
   const { activePartyId } = useParty();
   const [detail, setDetail] = useState<OperationDetail | null>(null);
   const [params, setParams] = useState<Record<string, unknown>>(initial.preview.body || {});
@@ -58,9 +63,21 @@ export function ProposalCard({ initial }: { initial: AssistantMatchedResponse })
       <div className="card-label">
         Proposed API call {initial.confidence != null && `· confidence ${(initial.confidence * 100).toFixed(0)}%`}
       </div>
-      <div className="op-summary" style={{ marginBottom: 10 }}>
+      <div className="op-summary" style={{ marginBottom: detail ? 0 : 10 }}>
         {initial.summary}
       </div>
+      {detail && (
+        <div className="op-category">
+          {detail.service} · {detail.tags[0] || "General"}{" "}
+          <button
+            className="link-btn"
+            onClick={() => onViewInCatalog(initial.opKey)}
+            title="Open this operation in the Catalog tab"
+          >
+            View in Catalog →
+          </button>
+        </div>
+      )}
 
       {/* Always available, not just when a field is missing -- lets you fix
           and retry after a failure (e.g. the assistant guessed a value the
