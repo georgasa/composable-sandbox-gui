@@ -87,20 +87,30 @@ def autofill_hint_for(name: str, schema: dict[str, Any] | None) -> dict[str, Any
     return None
 
 
-def coerce_numeric(value: Any, schema: dict[str, Any] | None) -> Any:
+# Fields the OpenAPI spec declares as type "string" but the real sandbox
+# actually rejects with "string found, number expected" if sent as one --
+# a spec bug, not a caller mistake. Discovered live: consumerLoans'
+# loanAmount is documented `"type": "string"` with a bare-number example
+# (250000, unquoted) -- the example is right, the declared type is wrong.
+_SPEC_MISTYPED_NUMERIC_FIELDS = {"loanAmount"}
+
+
+def coerce_numeric(value: Any, schema: dict[str, Any] | None, prop_name: str | None = None) -> Any:
     """Guarantees numeric-typed fields are emitted as JSON numbers, not
     strings -- structurally fixes the fundingAmount/depositAmount
     string-vs-number bug documented in CLAUDE.md rather than relying on the
-    caller to remember."""
-    if not schema:
+    caller to remember. Also overrides a small allowlist of fields where
+    the spec's declared type itself is wrong (see
+    _SPEC_MISTYPED_NUMERIC_FIELDS)."""
+    if not isinstance(value, str):
         return value
-    schema_type = schema.get("type")
-    if schema_type in ("number", "integer") and isinstance(value, str):
-        try:
-            return int(value) if schema_type == "integer" else float(value)
-        except ValueError:
-            return value
-    return value
+    schema_type = (schema or {}).get("type")
+    if schema_type not in ("number", "integer") and prop_name not in _SPEC_MISTYPED_NUMERIC_FIELDS:
+        return value
+    try:
+        return int(value) if schema_type == "integer" else float(value)
+    except ValueError:
+        return value
 
 
 def unwrap_response(status_code: int, body: Any) -> tuple[bool, list[str]]:

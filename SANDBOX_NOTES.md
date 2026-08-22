@@ -56,6 +56,13 @@ self-contained.
    (with `taxationPercent` summing to 100) to drop one.
 10. **maritalStatus "Single" is not valid reference data** on this sandbox
     (`Married` is) -- discovered live, not documented upstream.
+11. **`consumerLoans`' `loanAmount` field is mistyped in the OpenAPI spec
+    itself** -- declared `"type": "string"` (with a bare-number `example`,
+    250000, unquoted), but the real sandbox rejects a string outright with
+    `IRF-400200 "string found, number expected"`. A schema-driven
+    string→number coercion (matching the declared type) isn't enough here;
+    console-app's `sandbox_rules.coerce_numeric` special-cases this field
+    by name to force it numeric regardless of what the spec claims.
 
 ## Known-broken endpoints
 

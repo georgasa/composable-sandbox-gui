@@ -144,7 +144,7 @@ def build_request(
 
         for prop_name, prop_schema in properties.items():
             if prop_name in body and body[prop_name] not in (None, ""):
-                body[prop_name] = sandbox_rules.coerce_numeric(body[prop_name], prop_schema)
+                body[prop_name] = sandbox_rules.coerce_numeric(body[prop_name], prop_schema, prop_name)
                 continue
             hint = sandbox_rules.autofill_hint_for(prop_name, prop_schema)
             if hint is not None:
