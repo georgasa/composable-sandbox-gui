@@ -47,13 +47,31 @@ async def call(
     json: dict[str, Any] | None = None,
     params: dict[str, Any] | None = None,
     timeout: float | None = None,
+    log: list[dict[str, Any]] | None = None,
 ) -> SandboxResult:
+    """log, when passed, gets one entry appended per call -- the exact
+    method/URL/request body sent to the real sandbox and the exact response
+    that came back. Every mobile_routes.py handler collects these into a
+    local list and returns it as `apiCalls`, so the Mobile tab's UI can show
+    "what actually happened under the hood" for a "curated, direct-execute"
+    endpoint that (unlike the rest of console-app) has no prepare/confirm
+    step of its own to display a preview through."""
     try:
         async with httpx.AsyncClient(timeout=timeout or settings.request_timeout_seconds) as client:
             response = await client.request(method, url, headers=DEFAULT_HEADERS, params=params, json=json)
     except httpx.TimeoutException:
+        if log is not None:
+            log.append({
+                "method": method, "url": url, "requestBody": json,
+                "statusCode": None, "ok": False, "responseData": None,
+            })
         return SandboxResult(ok=False, status_code=None, data=None, errors=["Request timed out"])
     except httpx.ConnectError as exc:
+        if log is not None:
+            log.append({
+                "method": method, "url": url, "requestBody": json,
+                "statusCode": None, "ok": False, "responseData": None,
+            })
         return SandboxResult(ok=False, status_code=None, data=None, errors=[f"Connection error: {exc}"])
 
     try:
@@ -62,4 +80,9 @@ async def call(
         data = {"raw_response": response.text[:2000]}
 
     ok, errors = _unwrap(response.status_code, data)
+    if log is not None:
+        log.append({
+            "method": method, "url": url, "requestBody": json,
+            "statusCode": response.status_code, "ok": ok, "responseData": data,
+        })
     return SandboxResult(ok=ok, status_code=response.status_code, data=data, errors=errors)

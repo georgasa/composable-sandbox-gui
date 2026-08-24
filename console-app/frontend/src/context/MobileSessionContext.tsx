@@ -1,7 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { api } from "../api/client";
 import { useParty } from "./PartyContext";
-import type { AccountInfo, CustomerInfo } from "../types/mobile";
+import type { AccountInfo, ApiCallRecord, CustomerInfo } from "../types/mobile";
 
 interface MobileSessionContextValue {
   partyId: string | null;
@@ -10,6 +10,10 @@ interface MobileSessionContextValue {
   loans: AccountInfo[];
   loading: boolean;
   error: string | null;
+  /** Every real sandbox HTTP call made by the most recent Mobile tab
+   * action (including the dashboard refresh that follows a mutation), in
+   * the order they fired -- what the "Under the Hood" panel renders. */
+  lastApiCalls: ApiCallRecord[];
   createCustomer: () => Promise<void>;
   refresh: () => Promise<void>;
   transfer: (from: string, to: string, amount: number) => Promise<void>;
@@ -25,31 +29,42 @@ const MobileSessionContext = createContext<MobileSessionContextValue | null>(nul
  * separate "load existing customer" flow needed, this just reacts to
  * activePartyId changing, from whichever tab changed it. */
 export function MobileSessionProvider({ children }: { children: ReactNode }) {
-  const { activePartyId, setActivePartyId } = useParty();
+  const { activePartyId, setActivePartyId, refreshArrangements } = useParty();
   const [customer, setCustomer] = useState<CustomerInfo | null>(null);
   const [accounts, setAccounts] = useState<AccountInfo[]>([]);
   const [loans, setLoans] = useState<AccountInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastApiCalls, setLastApiCalls] = useState<ApiCallRecord[]>([]);
+  // createCustomer()'s own calls (party create + account open + funding)
+  // happen before activePartyId changes, but the refresh that then follows
+  // (triggered by the effect below) would otherwise overwrite lastApiCalls
+  // with just its own two calls -- stash createCustomer's calls here so
+  // the effect can prepend them instead of losing them.
+  const pendingExtraCallsRef = useRef<ApiCallRecord[]>([]);
 
-  const refresh = useCallback(async () => {
-    if (!activePartyId) return;
-    setLoading(true);
-    try {
-      const [customerInfo, arrangements] = await Promise.all([
-        api.getMobileCustomer(activePartyId),
-        api.getMobileArrangements(activePartyId),
-      ]);
-      setCustomer(customerInfo);
-      setAccounts(arrangements.accounts);
-      setLoans(arrangements.loans);
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setLoading(false);
-    }
-  }, [activePartyId]);
+  const refresh = useCallback(
+    async (extraCalls: ApiCallRecord[] = []) => {
+      if (!activePartyId) return;
+      setLoading(true);
+      try {
+        const [customerInfo, arrangements] = await Promise.all([
+          api.getMobileCustomer(activePartyId),
+          api.getMobileArrangements(activePartyId),
+        ]);
+        setCustomer(customerInfo);
+        setAccounts(arrangements.accounts);
+        setLoans(arrangements.loans);
+        setLastApiCalls([...extraCalls, ...customerInfo.apiCalls, ...arrangements.apiCalls]);
+        setError(null);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activePartyId]
+  );
 
   // Whenever the shared active party changes -- whether from this tab's
   // "Create Demo Customer", or from typing an existing ID into the party
@@ -61,7 +76,9 @@ export function MobileSessionProvider({ children }: { children: ReactNode }) {
       setLoans([]);
       return;
     }
-    refresh();
+    const extra = pendingExtraCallsRef.current;
+    pendingExtraCallsRef.current = [];
+    refresh(extra);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePartyId]);
 
@@ -70,6 +87,7 @@ export function MobileSessionProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const result = await api.createMobileCustomer();
+      pendingExtraCallsRef.current = result.apiCalls;
       setActivePartyId(result.partyId); // pins it app-wide, same as "+ Create New Party" elsewhere
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -79,8 +97,8 @@ export function MobileSessionProvider({ children }: { children: ReactNode }) {
 
   const transfer = useCallback(
     async (from: string, to: string, amount: number) => {
-      await api.mobileTransfer(from, to, amount, "Mobile transfer");
-      await refresh();
+      const result = await api.mobileTransfer(from, to, amount, "Mobile transfer");
+      await refresh(result.apiCalls);
     },
     [refresh]
   );
@@ -88,24 +106,44 @@ export function MobileSessionProvider({ children }: { children: ReactNode }) {
   const openAccount = useCallback(
     async (fundingAmount?: number) => {
       if (!activePartyId) return;
-      await api.openMobileAccount(activePartyId, fundingAmount);
-      await refresh();
+      const result = await api.openMobileAccount(activePartyId, fundingAmount);
+      await refresh(result.apiCalls);
+      // PartyContext's own arrangements (the Catalog/Assistant tabs' account
+      // picker) only refetches when the pinned party ID itself changes --
+      // it has no way to know this tab just created a new account for the
+      // SAME party, so it'd otherwise keep showing a stale, shorter list
+      // until the user notices and clicks the party bar's "Re-check".
+      refreshArrangements();
     },
-    [activePartyId, refresh]
+    [activePartyId, refresh, refreshArrangements]
   );
 
   const createLoan = useCallback(
     async (settlementAccountId: string, amount: number, term: string) => {
       if (!activePartyId) return;
-      await api.createMobileLoan(activePartyId, settlementAccountId, amount, term);
-      await refresh();
+      const result = await api.createMobileLoan(activePartyId, settlementAccountId, amount, term);
+      await refresh(result.apiCalls);
+      refreshArrangements(); // same reasoning as openAccount above
     },
-    [activePartyId, refresh]
+    [activePartyId, refresh, refreshArrangements]
   );
 
   return (
     <MobileSessionContext.Provider
-      value={{ partyId: activePartyId, customer, accounts, loans, loading, error, createCustomer, refresh, transfer, openAccount, createLoan }}
+      value={{
+        partyId: activePartyId,
+        customer,
+        accounts,
+        loans,
+        loading,
+        error,
+        lastApiCalls,
+        createCustomer,
+        refresh: () => refresh(),
+        transfer,
+        openAccount,
+        createLoan,
+      }}
     >
       {children}
     </MobileSessionContext.Provider>

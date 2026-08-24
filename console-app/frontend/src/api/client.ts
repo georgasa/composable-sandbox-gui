@@ -9,7 +9,14 @@ import type {
   PrepareResponse,
   TestEndpointResponse,
 } from "./types";
-import type { AccountDetails, AccountInfo, CustomerInfo, LoanScheduleEntry, TransactionInfo } from "../types/mobile";
+import type {
+  AccountDetails,
+  AccountInfo,
+  ApiCallRecord,
+  CustomerInfo,
+  LoanScheduleEntry,
+  TransactionInfo,
+} from "../types/mobile";
 
 // nginx.conf proxies /api/* to the backend Service by DNS name in
 // production, and vite.config.ts proxies the same path to localhost:8000
@@ -98,7 +105,13 @@ export const api = {
   // ---------- Mobile tab (curated, direct-execute -- see backend/app/api/mobile_routes.py) ----------
 
   createMobileCustomer: (firstName?: string, lastName?: string) =>
-    request<{ partyId: string; firstName: string; lastName: string; accountId: string | null }>("/mobile/customer", {
+    request<{
+      partyId: string;
+      firstName: string;
+      lastName: string;
+      accountId: string | null;
+      apiCalls: ApiCallRecord[];
+    }>("/mobile/customer", {
       method: "POST",
       body: JSON.stringify({ firstName, lastName }),
     }),
@@ -106,31 +119,33 @@ export const api = {
   getMobileCustomer: (partyId: string) => request<CustomerInfo>(`/mobile/customer/${partyId}`),
 
   getMobileArrangements: (partyId: string) =>
-    request<{ accounts: AccountInfo[]; loans: AccountInfo[] }>(`/mobile/customer/${partyId}/arrangements`),
+    request<{ accounts: AccountInfo[]; loans: AccountInfo[]; apiCalls: ApiCallRecord[] }>(
+      `/mobile/customer/${partyId}/arrangements`
+    ),
 
   getMobileTransactions: (accountId: string) =>
-    request<{ items: TransactionInfo[] }>(`/mobile/accounts/${accountId}/transactions`),
+    request<{ items: TransactionInfo[]; apiCalls: ApiCallRecord[] }>(`/mobile/accounts/${accountId}/transactions`),
 
   getMobileAccountDetails: (accountId: string) => request<AccountDetails>(`/mobile/accounts/${accountId}/details`),
 
   openMobileAccount: (partyId: string, fundingAmount?: number) =>
-    request<{ accountId: string | null }>("/mobile/accounts", {
+    request<{ accountId: string | null; apiCalls: ApiCallRecord[] }>("/mobile/accounts", {
       method: "POST",
       body: JSON.stringify({ partyId, fundingAmount }),
     }),
 
   mobileTransfer: (fromAccountId: string, toAccountId: string, amount: number, description: string) =>
-    request<{ ok: boolean }>("/mobile/transfer", {
+    request<{ ok: boolean; apiCalls: ApiCallRecord[] }>("/mobile/transfer", {
       method: "POST",
       body: JSON.stringify({ fromAccountId, toAccountId, amount, description }),
     }),
 
   createMobileLoan: (partyId: string, settlementAccountId: string, amount: number, term: string) =>
-    request<{ loanId: string | null }>("/mobile/loans", {
+    request<{ loanId: string | null; apiCalls: ApiCallRecord[] }>("/mobile/loans", {
       method: "POST",
       body: JSON.stringify({ partyId, settlementAccountId, amount, term }),
     }),
 
   getMobileLoanSchedule: (loanId: string) =>
-    request<{ items: LoanScheduleEntry[] }>(`/mobile/loans/${loanId}/schedule`),
+    request<{ items: LoanScheduleEntry[]; apiCalls: ApiCallRecord[] }>(`/mobile/loans/${loanId}/schedule`),
 };

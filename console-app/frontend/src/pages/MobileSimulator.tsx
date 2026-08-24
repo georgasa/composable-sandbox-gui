@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PhoneFrame } from "../components/mobile/PhoneFrame";
+import { ApiCallLog } from "../components/mobile/ApiCallLog";
 import { MobileThemeProvider } from "../context/MobileThemeContext";
 import { MobileSessionProvider, useMobileSession } from "../context/MobileSessionContext";
 import { LoginScreen } from "../components/mobile/screens/LoginScreen";
@@ -31,7 +32,7 @@ export function MobileSimulator() {
 }
 
 function Shell() {
-  const { partyId } = useMobileSession();
+  const { partyId, lastApiCalls } = useMobileSession();
   const [screen, setScreen] = useState<Screen>("home");
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
@@ -87,6 +88,7 @@ function Shell() {
             </>
           )}
         </PhoneFrame>
+        <ApiCallLog calls={lastApiCalls} />
       </div>
     </div>
   );

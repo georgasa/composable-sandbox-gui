@@ -1,5 +1,18 @@
 // Mirrors mobile-simulator/backend/app/api/mobile_routes.py response shapes.
 
+/** One real HTTP call the backend made to the live sandbox while handling a
+ * Mobile tab action -- see app/mobile_sandbox_client.py's `log` param.
+ * Every /mobile/* response carries the full list of these under
+ * `apiCalls`, which is what the "Under the Hood" panel renders. */
+export interface ApiCallRecord {
+  method: string;
+  url: string;
+  requestBody: unknown;
+  statusCode: number | null;
+  ok: boolean;
+  responseData: unknown;
+}
+
 export interface AccountInfo {
   accountId: string;
   accountName: string;
@@ -16,6 +29,7 @@ export interface CustomerInfo {
   gender: string;
   maritalStatus: string;
   cityOfBirth: string;
+  apiCalls: ApiCallRecord[];
 }
 
 export interface TransactionInfo {
@@ -31,6 +45,7 @@ export interface AccountDetails {
   status: string;
   openingDate: string;
   currency: string;
+  apiCalls: ApiCallRecord[];
 }
 
 export interface LoanScheduleEntry {

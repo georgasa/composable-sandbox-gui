@@ -91,6 +91,7 @@ async def create_customer(payload: CreatePartyPayload, request: Request):
     just pins one via the shared party session bar and calls the GET
     endpoints below -- no separate "load existing" endpoint needed."""
     env = request.app.state.environment
+    calls: list[dict] = []
     first = payload.firstName or random.choice(_FIRST_NAMES)
     last = payload.lastName or random.choice(_LAST_NAMES)
 
@@ -122,9 +123,9 @@ async def create_customer(payload: CreatePartyPayload, request: Request):
             "primary": True,
         }],
     }
-    party_result = await call("POST", f"{env.base_url_for('Party')}/party/parties", json=party_body)
+    party_result = await call("POST", f"{env.base_url_for('Party')}/party/parties", json=party_body, log=calls)
     if not party_result.ok:
-        raise HTTPException(400, {"errors": party_result.errors})
+        raise HTTPException(400, {"errors": party_result.errors, "apiCalls": calls})
     party_id = party_result.data.get("id")
 
     account_body = {
@@ -136,10 +137,10 @@ async def create_customer(payload: CreatePartyPayload, request: Request):
         "quotationReference": _ref("QUOT"),
     }
     account_result = await call(
-        "POST", f"{env.base_url_for('Deposits')}/holdings/accounts/currentAccounts", json=account_body
+        "POST", f"{env.base_url_for('Deposits')}/holdings/accounts/currentAccounts", json=account_body, log=calls
     )
     if not account_result.ok:
-        return {"partyId": party_id, "firstName": first, "lastName": last, "accountId": None}
+        return {"partyId": party_id, "firstName": first, "lastName": last, "accountId": None, "apiCalls": calls}
     account_id = account_result.data.get("accountId") or account_result.data.get("accountReference")
 
     fund_body = {
@@ -150,17 +151,18 @@ async def create_customer(payload: CreatePartyPayload, request: Request):
         "creditCurrency": "USD",
         "paymentDescription": "Initial deposit",
     }
-    await call("POST", f"{env.base_url_for('Deposits')}/order/payments/creditAccount", json=fund_body)
+    await call("POST", f"{env.base_url_for('Deposits')}/order/payments/creditAccount", json=fund_body, log=calls)
 
-    return {"partyId": party_id, "firstName": first, "lastName": last, "accountId": account_id}
+    return {"partyId": party_id, "firstName": first, "lastName": last, "accountId": account_id, "apiCalls": calls}
 
 
 @router.get("/customer/{party_id}")
 async def get_customer(party_id: str, request: Request):
     env = request.app.state.environment
-    result = await call("GET", f"{env.base_url_for('Party')}/party/parties/{party_id}")
+    calls: list[dict] = []
+    result = await call("GET", f"{env.base_url_for('Party')}/party/parties/{party_id}", log=calls)
     if not result.ok:
-        raise HTTPException(404, {"errors": result.errors})
+        raise HTTPException(404, {"errors": result.errors, "apiCalls": calls})
     body = result.data or {}
     return {
         "firstName": body.get("firstName", ""),
@@ -170,6 +172,7 @@ async def get_customer(party_id: str, request: Request):
         "gender": body.get("gender", ""),
         "maritalStatus": body.get("maritalStatus", ""),
         "cityOfBirth": body.get("cityOfBirth", ""),
+        "apiCalls": calls,
     }
 
 
@@ -182,9 +185,12 @@ async def get_arrangements(party_id: str, request: Request):
     party was just created or is being reused from an existing ID pinned
     in the party session bar."""
     env = request.app.state.environment
-    result = await call("GET", f"{env.base_url_for('Holdings')}/holdings/parties/{party_id}/arrangements")
+    calls: list[dict] = []
+    result = await call(
+        "GET", f"{env.base_url_for('Holdings')}/holdings/parties/{party_id}/arrangements", log=calls
+    )
     if not result.ok:
-        return {"accounts": [], "loans": []}
+        return {"accounts": [], "loans": [], "apiCalls": calls}
 
     accounts: list[dict] = []
     loans: list[dict] = []
@@ -206,7 +212,8 @@ async def get_arrangements(party_id: str, request: Request):
             loans.append(entry)
         else:
             balance_result = await call(
-                "GET", f"{env.base_url_for('Holdings')}/holdings/accounts/{_company_account_id(account_id)}/balances"
+                "GET", f"{env.base_url_for('Holdings')}/holdings/accounts/{_company_account_id(account_id)}/balances",
+                log=calls,
             )
             if balance_result.ok:
                 items = (balance_result.data or {}).get("items") or []
@@ -214,17 +221,19 @@ async def get_arrangements(party_id: str, request: Request):
                     entry["workingBalance"] = items[0].get("workingBalance", 0)
             accounts.append(entry)
 
-    return {"accounts": accounts, "loans": loans}
+    return {"accounts": accounts, "loans": loans, "apiCalls": calls}
 
 
 @router.get("/accounts/{account_id}/transactions")
 async def get_transactions(account_id: str, request: Request):
     env = request.app.state.environment
+    calls: list[dict] = []
     result = await call(
-        "GET", f"{env.base_url_for('Holdings')}/holdings/accounts/{_company_account_id(account_id)}/transactions"
+        "GET", f"{env.base_url_for('Holdings')}/holdings/accounts/{_company_account_id(account_id)}/transactions",
+        log=calls,
     )
     if not result.ok:
-        return {"items": []}
+        return {"items": [], "apiCalls": calls}
     items = (result.data or {}).get("items", [])
     return {
         "items": [
@@ -236,21 +245,24 @@ async def get_transactions(account_id: str, request: Request):
                 "currency": t.get("currency", ""),
             }
             for t in items
-        ]
+        ],
+        "apiCalls": calls,
     }
 
 
 @router.get("/accounts/{account_id}/details")
 async def get_account_details(account_id: str, request: Request):
     env = request.app.state.environment
+    calls: list[dict] = []
     company_account_id = _company_account_id(account_id)
     details_result = await call(
         "GET",
         f"{env.base_url_for('Holdings')}/holdings/accounts/{company_account_id}/accountDetails",
         params={"alternatekey": "accountId", "alternatename": "ACCOUNT"},
+        log=calls,
     )
     if not details_result.ok:
-        raise HTTPException(404, {"errors": details_result.errors})
+        raise HTTPException(404, {"errors": details_result.errors, "apiCalls": calls})
     body = details_result.data or {}
     product = body.get("productDetails", {})
     dates = body.get("accountDates", {})
@@ -259,12 +271,14 @@ async def get_account_details(account_id: str, request: Request):
         "status": body.get("baseDetails", {}).get("arrangementStatus", ""),
         "openingDate": dates.get("startDate", ""),
         "currency": body.get("baseDetails", {}).get("currency", ""),
+        "apiCalls": calls,
     }
 
 
 @router.post("/accounts")
 async def open_account(payload: OpenAccountPayload, request: Request):
     env = request.app.state.environment
+    calls: list[dict] = []
     account_body = {
         "parties": [{"partyId": payload.partyId, "partyRole": "OWNER"}],
         "productId": "CurrentAccount",
@@ -273,9 +287,11 @@ async def open_account(payload: OpenAccountPayload, request: Request):
         "openingDate": settings.system_date,
         "quotationReference": _ref("QUOT"),
     }
-    result = await call("POST", f"{env.base_url_for('Deposits')}/holdings/accounts/currentAccounts", json=account_body)
+    result = await call(
+        "POST", f"{env.base_url_for('Deposits')}/holdings/accounts/currentAccounts", json=account_body, log=calls
+    )
     if not result.ok:
-        raise HTTPException(400, {"errors": result.errors})
+        raise HTTPException(400, {"errors": result.errors, "apiCalls": calls})
     account_id = result.data.get("accountId") or result.data.get("accountReference")
 
     if payload.fundingAmount:
@@ -287,14 +303,15 @@ async def open_account(payload: OpenAccountPayload, request: Request):
             "creditCurrency": "USD",
             "paymentDescription": "Initial deposit",
         }
-        await call("POST", f"{env.base_url_for('Deposits')}/order/payments/creditAccount", json=fund_body)
+        await call("POST", f"{env.base_url_for('Deposits')}/order/payments/creditAccount", json=fund_body, log=calls)
 
-    return {"accountId": account_id}
+    return {"accountId": account_id, "apiCalls": calls}
 
 
 @router.post("/transfer")
 async def transfer(payload: TransferPayload, request: Request):
     env = request.app.state.environment
+    calls: list[dict] = []
     body = {
         "paymentTransactionReference": _ref("TRF"),
         "paymentValueDate": settings.system_date,
@@ -304,10 +321,12 @@ async def transfer(payload: TransferPayload, request: Request):
         "paymentAmount": payload.amount,
         "paymentDescription": payload.description,
     }
-    result = await call("POST", f"{env.base_url_for('Deposits')}/order/payments/internalTransfer", json=body)
+    result = await call(
+        "POST", f"{env.base_url_for('Deposits')}/order/payments/internalTransfer", json=body, log=calls
+    )
     if not result.ok:
-        raise HTTPException(400, {"errors": result.errors})
-    return {"ok": True}
+        raise HTTPException(400, {"errors": result.errors, "apiCalls": calls})
+    return {"ok": True, "apiCalls": calls}
 
 
 @router.post("/loans")
@@ -322,6 +341,7 @@ async def create_loan(payload: CreateLoanPayload, request: Request):
     # CALL CONTRACT" with it -- repaymentStartDate/repaymentFrequency
     # (also in the verified script, missing here before) are the likely
     # fix for that specific error.
+    calls: list[dict] = []
     settlement_ref = f"deposits|{settings.company_id}|{payload.settlementAccountId}"
     body = {
         "parties": [{"partyId": payload.partyId, "partyRole": "OWNER"}],
@@ -339,12 +359,12 @@ async def create_loan(payload: CreateLoanPayload, request: Request):
     }
     result = await call(
         "POST", f"{env.base_url_for('Lending')}/holdings/lending/consumerLoans", json=body,
-        timeout=settings.long_request_timeout_seconds,
+        timeout=settings.long_request_timeout_seconds, log=calls,
     )
     if not result.ok:
-        raise HTTPException(400, {"errors": result.errors})
+        raise HTTPException(400, {"errors": result.errors, "apiCalls": calls})
     loan_id = result.data.get("accountReference") or result.data.get("id")
-    return {"loanId": loan_id}
+    return {"loanId": loan_id, "apiCalls": calls}
 
 
 @router.get("/loans/{loan_id}/schedule")
@@ -354,9 +374,12 @@ async def get_loan_schedule(loan_id: str, request: Request):
     # is "paymentSchedules" (not "items"), amounts are formatted strings
     # with thousands separators -- both discovered live.
     env = request.app.state.environment
-    result = await call("GET", f"{env.base_url_for('Lending')}/holdings/lending/{loan_id}/paymentSchedule")
+    calls: list[dict] = []
+    result = await call(
+        "GET", f"{env.base_url_for('Lending')}/holdings/lending/{loan_id}/paymentSchedule", log=calls
+    )
     if not result.ok:
-        return {"items": []}
+        return {"items": [], "apiCalls": calls}
     raw = (result.data or {}).get("paymentSchedules", [])
     return {
         "items": [
@@ -368,5 +391,6 @@ async def get_loan_schedule(loan_id: str, request: Request):
                 "balance": entry.get("balance", ""),
             }
             for entry in raw
-        ]
+        ],
+        "apiCalls": calls,
     }

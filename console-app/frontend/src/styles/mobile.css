@@ -34,6 +34,7 @@ unprefixed name here would silently override those app-wide. */
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 20px;
   padding: 24px;
 }
 
@@ -474,4 +475,131 @@ unprefixed name here would silently override those app-wide. */
   flex: 1;
   padding: 6px 10px;
   font-size: 12px;
+}
+
+/* ---------- "Under the Hood" api call log ---------- */
+
+.api-call-log {
+  align-self: flex-start;
+  width: 320px;
+  background: var(--mob-card);
+  border: 1px solid var(--mob-border);
+  border-radius: var(--mob-radius-sm);
+  overflow: hidden;
+  font-family: var(--mob-font-body);
+}
+
+.api-call-log.expanded {
+  max-height: 720px;
+  display: flex;
+  flex-direction: column;
+}
+
+.api-call-log-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: none;
+  border: none;
+  color: var(--mob-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.api-call-log-caret {
+  margin-left: auto;
+  color: var(--mob-text-dim);
+}
+
+.api-call-log-body {
+  overflow-y: auto;
+  border-top: 1px solid var(--mob-border);
+  padding: 8px;
+}
+
+.api-call-log-hint {
+  font-size: 11px;
+  color: var(--mob-text-dim);
+  padding: 4px 6px 8px;
+}
+
+.api-call-log-empty {
+  font-size: 12px;
+  color: var(--mob-text-dim);
+  padding: 8px 6px;
+}
+
+.api-call-row {
+  border-bottom: 1px solid var(--mob-border);
+}
+.api-call-row:last-child {
+  border-bottom: none;
+}
+
+.api-call-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--mob-text);
+}
+
+.api-call-toggle {
+  color: var(--mob-text-dim);
+  width: 10px;
+  flex-shrink: 0;
+}
+
+.api-call-path {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+}
+
+.api-call-status {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+}
+.api-call-status.ok {
+  color: var(--mob-positive);
+}
+.api-call-status.fail {
+  color: var(--mob-negative);
+}
+
+.api-call-detail {
+  padding: 4px 10px 12px 26px;
+}
+
+.api-call-detail-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mob-text-dim);
+  margin-top: 8px;
+}
+
+.api-call-detail pre {
+  margin: 4px 0 0;
+  padding: 8px;
+  background: var(--mob-card-alt);
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 220px;
+  overflow-y: auto;
 }
