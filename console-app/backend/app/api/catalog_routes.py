@@ -77,6 +77,8 @@ async def get_operation_detail(op_key: str, request: Request):
         tags=op.tags,
         documented=op.documented,
         known_issue=op.known_issue,
+        explorer_service=op.explorer_service,
+        explorer_group=op.explorer_group,
         base_url=request.app.state.environment.base_url_for(op.service),
         parameters=op.parameters,
         request_schema=request_schema,

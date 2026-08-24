@@ -11,6 +11,11 @@ export interface OperationSummary {
   tags: string[];
   documented: boolean;
   knownIssue: string | null;
+  /** Service/Group this operation maps to in composable-explorer's curated
+   * API catalog (frontend/src/pages/modules/*Content.tsx), or null if it
+   * isn't documented there -- see backend app/catalog/explorer_taxonomy.py. */
+  explorerService: string | null;
+  explorerGroup: string | null;
 }
 
 export interface ParamInfo {
