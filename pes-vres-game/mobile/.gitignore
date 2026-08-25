@@ -1,0 +1,17 @@
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+.pub-cache/
+.pub/
+*.iml
+.idea/
+android/local.properties
+android/.gradle/
+android/gradlew
+android/gradlew.bat
+android/**/gradle-wrapper.jar
+ios/Flutter/Generated.xcconfig
+ios/Pods/
+*.g.dart
