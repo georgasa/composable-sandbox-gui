@@ -1191,6 +1191,19 @@ button {
   margin-bottom: 16px;
 }
 
+.preset-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.preset-btn-active {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+
 .endpoint-row {
   margin-bottom: 14px;
 }

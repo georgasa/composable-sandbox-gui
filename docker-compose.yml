@@ -7,6 +7,7 @@ services:
     build:
       context: .
       dockerfile: console-app/backend/Dockerfile
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
@@ -26,6 +27,14 @@ services:
       # console-app/backend/app/auth.py.
       AUTH_MODE: "${AUTH_MODE:-none}"
       DEMO_PASSWORD: "${DEMO_PASSWORD:-}"
+    # Resolves to the WSL VM's own address from inside this container --
+    # needed for the "Local WSL" environment preset (app/environment.py),
+    # which points at a real modular Composable Banking stack (Deposits,
+    # Lending, Holdings, Party) running as k3s pods on this same machine's
+    # WSL Ubuntu distro. Only meaningful when this stack itself also runs
+    # under that WSL distro (local dev); harmless no-op on Azure.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./console-app/data:/data
     healthcheck:

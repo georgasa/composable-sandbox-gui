@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
-import type { TestEndpointResponse } from "../api/types";
+import type { EnvironmentPreset, TestEndpointResponse } from "../api/types";
 
 interface Props {
   onClose: () => void;
@@ -32,6 +32,15 @@ export function EnvironmentModal({ onClose, onSaved }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, TestEndpointResponse | "testing">>({});
 
+  // One-click named environments (e.g. "aekxuia" on Azure vs this machine's
+  // own "Local WSL" k3s modular pack) -- see backend app/environment.py's
+  // PRESETS. activePreset is null once the user hand-edits prefix/seed/region
+  // away from a saved preset's exact values (a custom/ad-hoc environment).
+  const [presets, setPresets] = useState<EnvironmentPreset[]>([]);
+  const [activePreset, setActivePreset] = useState<string | null>(null);
+  const [presetBaseUrls, setPresetBaseUrls] = useState<Record<string, string> | null>(null);
+  const [switchingPreset, setSwitchingPreset] = useState<string | null>(null);
+
   const [llmModel, setLlmModel] = useState("gpt-4o-mini");
   const [llmHasKey, setLlmHasKey] = useState(false);
   const [llmApiKeyInput, setLlmApiKeyInput] = useState("");
@@ -47,9 +56,13 @@ export function EnvironmentModal({ onClose, onSaved }: Props) {
         setPrefix(env.prefix);
         setSeed(env.seed);
         setRegion(env.region);
+        setActivePreset(env.activePreset);
+        setPresetBaseUrls(env.activePreset ? env.baseUrls : null);
       })
       .catch((e) => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
+
+    api.getEnvironmentPresets().then(setPresets).catch(() => {});
 
     api
       .getLLMConfig()
@@ -60,7 +73,30 @@ export function EnvironmentModal({ onClose, onSaved }: Props) {
       .catch(() => {});
   }, []);
 
-  const previewUrls = computeBaseUrls(prefix, seed, region);
+  // Once a preset is active, its own (possibly non-templated) baseUrls are
+  // the source of truth for display -- only fall back to live client-side
+  // templating once the user hand-edits a field away from that preset.
+  const previewUrls = activePreset && presetBaseUrls ? presetBaseUrls : computeBaseUrls(prefix, seed, region);
+
+  const handleActivatePreset = async (presetId: string) => {
+    setSwitchingPreset(presetId);
+    setError(null);
+    try {
+      const env = await api.activateEnvironmentPreset(presetId);
+      setLabel(env.label);
+      setPrefix(env.prefix);
+      setSeed(env.seed);
+      setRegion(env.region);
+      setActivePreset(env.activePreset);
+      setPresetBaseUrls(env.baseUrls);
+      setTestResults({});
+      onSaved();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSwitchingPreset(null);
+    }
+  };
 
   // A typed-but-unsaved key is exactly what got silently lost once already
   // (two similarly-labeled "Save" buttons in one modal made it easy to
@@ -78,11 +114,22 @@ export function EnvironmentModal({ onClose, onSaved }: Props) {
     setTestResults({});
   }, [prefix, seed, region]);
 
+  // Hand-editing prefix/seed/region away from a preset's exact values makes
+  // this a custom/ad-hoc environment -- fall back to live client-side
+  // templating for the preview instead of the (now stale) preset's URLs.
+  const editField = (setter: (v: string) => void) => (value: string) => {
+    setter(value);
+    setActivePreset(null);
+    setPresetBaseUrls(null);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setError(null);
     try {
-      await api.updateEnvironment({ label, prefix, seed, region });
+      const env = await api.updateEnvironment({ label, prefix, seed, region });
+      setActivePreset(env.activePreset);
+      setPresetBaseUrls(env.activePreset ? env.baseUrls : null);
       setTestResults({});
       onSaved();
     } catch (e) {
@@ -150,23 +197,46 @@ export function EnvironmentModal({ onClose, onSaved }: Props) {
             <div className="empty-state">Loading...</div>
           ) : (
             <>
+              {presets.length > 0 && (
+                <div className="field-group">
+                  <label className="field-label">Environment</label>
+                  <div className="preset-row">
+                    {presets.map((p) => (
+                      <button
+                        key={p.id}
+                        className={`btn preset-btn${activePreset === p.id ? " preset-btn-active" : ""}`}
+                        disabled={switchingPreset !== null}
+                        onClick={() => handleActivatePreset(p.id)}
+                      >
+                        {switchingPreset === p.id ? <span className="spinner" /> : p.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="field-hint">
+                    {activePreset
+                      ? "Using a named preset -- edit prefix/seed/region below to switch to a custom environment instead."
+                      : "Custom environment (doesn't match a saved preset)."}
+                  </div>
+                </div>
+              )}
+
               <div className="field-group">
                 <label className="field-label">Label</label>
-                <input className="field-input" value={label} onChange={(e) => setLabel(e.target.value)} />
+                <input className="field-input" value={label} onChange={(e) => editField(setLabel)(e.target.value)} />
               </div>
               <div className="field-row">
                 <div className="field-group">
                   <label className="field-label">Prefix</label>
-                  <input className="field-input" value={prefix} onChange={(e) => setPrefix(e.target.value)} />
+                  <input className="field-input" value={prefix} onChange={(e) => editField(setPrefix)(e.target.value)} />
                 </div>
                 <div className="field-group">
                   <label className="field-label">Seed</label>
-                  <input className="field-input" value={seed} onChange={(e) => setSeed(e.target.value)} />
+                  <input className="field-input" value={seed} onChange={(e) => editField(setSeed)(e.target.value)} />
                 </div>
               </div>
               <div className="field-group">
                 <label className="field-label">Region</label>
-                <input className="field-input" value={region} onChange={(e) => setRegion(e.target.value)} />
+                <input className="field-input" value={region} onChange={(e) => editField(setRegion)(e.target.value)} />
               </div>
 
               {error && <div className="confirm-banner">{error}</div>}

@@ -72,6 +72,12 @@ export interface EnvironmentResponse {
   seed: string;
   region: string;
   baseUrls: Record<string, string>;
+  activePreset: string | null;
+}
+
+export interface EnvironmentPreset {
+  id: string;
+  label: string;
 }
 
 export interface TestEndpointResponse {

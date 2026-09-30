@@ -1,17 +1,18 @@
 """Lets the console point at a different sandbox instance (e.g. a fresh
-aekxuia rebuild with a new seed) without a redeploy -- just edit
-label/prefix/seed/region and every operation's resolved URL updates on the
-next request, since request_builder.py resolves base URLs live from this
-store rather than baking them into the catalog at startup.
+aekxuia rebuild with a new seed, or the local WSL k3s modular pack) without
+a redeploy -- just switch presets or edit label/prefix/seed/region, and
+every operation's resolved URL updates on the next request, since
+request_builder.py resolves base URLs live from this store rather than
+baking them into the catalog at startup.
 """
 
 from __future__ import annotations
 
 import httpx
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
-from app.environment import EnvironmentConfig
+from app.environment import PRESETS, EnvironmentConfig
 
 router = APIRouter()
 
@@ -23,19 +24,21 @@ class EnvironmentPayload(BaseModel):
     region: str
 
 
-def _serialize(env: EnvironmentConfig) -> dict:
+def _serialize(env: EnvironmentConfig, active_preset: str | None) -> dict:
     return {
         "label": env.label,
         "prefix": env.prefix,
         "seed": env.seed,
         "region": env.region,
         "baseUrls": env.base_urls(),
+        "activePreset": active_preset,
     }
 
 
 @router.get("/environment")
 async def get_environment(request: Request):
-    return _serialize(request.app.state.environment.get())
+    store = request.app.state.environment
+    return _serialize(store.get(), store.get_active_preset())
 
 
 @router.put("/environment")
@@ -46,8 +49,27 @@ async def update_environment(payload: EnvironmentPayload, request: Request):
         seed=payload.seed.strip(),
         region=payload.region.strip(),
     )
-    request.app.state.environment.set(new_env)
-    return _serialize(new_env)
+    store = request.app.state.environment
+    store.set(new_env)
+    return _serialize(new_env, store.get_active_preset())
+
+
+@router.get("/environment/presets")
+async def list_presets():
+    """Named, one-click environment presets for the UI's switcher -- an
+    Azure-hosted sandbox (aekxuia) and this machine's own local WSL k3s
+    modular pack. See app/environment.py's PRESETS for the verified URLs."""
+    return [{"id": preset_id, "label": env.label} for preset_id, env in PRESETS.items()]
+
+
+@router.post("/environment/presets/{preset_id}")
+async def activate_preset(preset_id: str, request: Request):
+    store = request.app.state.environment
+    try:
+        env = store.activate_preset(preset_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Unknown environment preset: {preset_id}")
+    return _serialize(env, preset_id)
 
 
 class TestRequest(BaseModel):

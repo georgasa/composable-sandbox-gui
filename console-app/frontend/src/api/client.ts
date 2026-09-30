@@ -2,6 +2,7 @@ import type {
   AssistantResponse,
   CatalogResponse,
   ConfigResponse,
+  EnvironmentPreset,
   EnvironmentResponse,
   ExecuteResponse,
   LLMConfigResponse,
@@ -84,6 +85,13 @@ export const api = {
     request<EnvironmentResponse>("/environment", {
       method: "PUT",
       body: JSON.stringify(env),
+    }),
+
+  getEnvironmentPresets: () => request<EnvironmentPreset[]>("/environment/presets"),
+
+  activateEnvironmentPreset: (presetId: string) =>
+    request<EnvironmentResponse>(`/environment/presets/${encodeURIComponent(presetId)}`, {
+      method: "POST",
     }),
 
   testEndpoint: (url: string) =>
