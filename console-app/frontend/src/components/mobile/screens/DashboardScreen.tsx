@@ -46,6 +46,9 @@ export function DashboardScreen({ onSelectAccount }: Props) {
       <button className="btn btn-secondary btn-block" onClick={() => openAccount(1000)} disabled={loading}>
         + Open Current Account
       </button>
+      <button className="btn btn-secondary btn-block" onClick={() => openAccount(undefined, "savings")} disabled={loading}>
+        + Open Savings Account
+      </button>
     </div>
   );
 }

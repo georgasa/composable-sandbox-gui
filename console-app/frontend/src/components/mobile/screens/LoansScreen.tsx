@@ -49,9 +49,18 @@ export function LoansScreen({ onSelectLoan }: Props) {
       )}
 
       {!showForm ? (
-        <button className="btn btn-secondary btn-block" onClick={() => setShowForm(true)} disabled={accounts.length === 0}>
-          + New Consumer Loan
-        </button>
+        <>
+          <div className="promo-card">
+            <div className="promo-card-title">⚡ Get up to $20,000 — in minutes</div>
+            <div className="promo-card-body">
+              Pre-approved, no branch visit, no physical paperwork, no waiting days for a decision.
+              Apply from your phone and have funds in your account in minutes, not weeks.
+            </div>
+          </div>
+          <button className="btn btn-secondary btn-block" onClick={() => setShowForm(true)} disabled={accounts.length === 0}>
+            + New Consumer Loan
+          </button>
+        </>
       ) : (
         <form className="form-stack" onSubmit={handleCreate}>
           <label className="field-label">Settlement account</label>
@@ -63,8 +72,15 @@ export function LoansScreen({ onSelectLoan }: Props) {
               </option>
             ))}
           </select>
-          <label className="field-label">Amount (USD)</label>
-          <input className="text-input" type="number" min="1000" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <label className="field-label">Amount (USD, up to $20,000)</label>
+          <input
+            className="text-input"
+            type="number"
+            min="1000"
+            max="20000"
+            value={amount}
+            onChange={(e) => setAmount(Math.min(20000, Number(e.target.value) || 0).toString())}
+          />
           <label className="field-label">Term</label>
           <select className="text-input" value={term} onChange={(e) => setTerm(e.target.value)}>
             <option value="1Y">1 year</option>

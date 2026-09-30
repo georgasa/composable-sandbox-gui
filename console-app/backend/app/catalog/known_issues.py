@@ -59,12 +59,6 @@ KNOWN_ISSUE_RULES: list[KnownIssueRule] = [
         service="Lending",
     ),
     KnownIssueRule(
-        "POST", "/holdings/accounts/savingsAccounts",
-        "The SavingsAccount product does not exist on this sandbox -- use "
-        "productId \"CurrentAccount\" instead, even for a savings-account use case.",
-        service="Deposits", exact=True,
-    ),
-    KnownIssueRule(
         "POST", "personalLoans",
         "PersonalLoan returns HTTP 405 on this sandbox -- use productId "
         "\"ConsumerLoan\" or \"Mortgages\" instead.",

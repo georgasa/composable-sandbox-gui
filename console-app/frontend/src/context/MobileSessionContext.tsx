@@ -17,7 +17,7 @@ interface MobileSessionContextValue {
   createCustomer: () => Promise<void>;
   refresh: () => Promise<void>;
   transfer: (from: string, to: string, amount: number) => Promise<void>;
-  openAccount: (fundingAmount?: number) => Promise<void>;
+  openAccount: (fundingAmount?: number, accountType?: "current" | "savings") => Promise<void>;
   createLoan: (settlementAccountId: string, amount: number, term: string) => Promise<void>;
 }
 
@@ -104,9 +104,9 @@ export function MobileSessionProvider({ children }: { children: ReactNode }) {
   );
 
   const openAccount = useCallback(
-    async (fundingAmount?: number) => {
+    async (fundingAmount?: number, accountType: "current" | "savings" = "current") => {
       if (!activePartyId) return;
-      const result = await api.openMobileAccount(activePartyId, fundingAmount);
+      const result = await api.openMobileAccount(activePartyId, fundingAmount, accountType);
       await refresh(result.apiCalls);
       // PartyContext's own arrangements (the Catalog/Assistant tabs' account
       // picker) only refetches when the pinned party ID itself changes --

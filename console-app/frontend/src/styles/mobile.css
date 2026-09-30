@@ -213,6 +213,28 @@ unprefixed name here would silently override those app-wide. */
   gap: 8px;
 }
 
+/* ---------- marketing promo cards (Open Savings / Consumer Loan) ---------- */
+
+.promo-card {
+  background: var(--mob-primary-dim);
+  border-radius: var(--mob-radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.promo-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mob-primary);
+  margin-bottom: 2px;
+}
+
+.promo-card-body {
+  font-size: 12px;
+  color: var(--mob-text-dim);
+  line-height: 1.4;
+}
+
 .mobile-tab-content .field-label {
   font-size: 12px;
   font-weight: 600;

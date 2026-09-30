@@ -136,10 +136,10 @@ export const api = {
 
   getMobileAccountDetails: (accountId: string) => request<AccountDetails>(`/mobile/accounts/${accountId}/details`),
 
-  openMobileAccount: (partyId: string, fundingAmount?: number) =>
+  openMobileAccount: (partyId: string, fundingAmount?: number, accountType: "current" | "savings" = "current") =>
     request<{ accountId: string | null; apiCalls: ApiCallRecord[] }>("/mobile/accounts", {
       method: "POST",
-      body: JSON.stringify({ partyId, fundingAmount }),
+      body: JSON.stringify({ partyId, fundingAmount, accountType }),
     }),
 
   mobileTransfer: (fromAccountId: string, toAccountId: string, amount: number, description: string) =>

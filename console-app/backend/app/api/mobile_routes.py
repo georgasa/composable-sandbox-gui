@@ -73,6 +73,7 @@ class TransferPayload(BaseModel):
 class OpenAccountPayload(BaseModel):
     partyId: str
     fundingAmount: float | None = None
+    accountType: str = "current"  # "current" | "savings"
 
 
 class CreateLoanPayload(BaseModel):
@@ -279,16 +280,24 @@ async def get_account_details(account_id: str, request: Request):
 async def open_account(payload: OpenAccountPayload, request: Request):
     env = request.app.state.environment
     calls: list[dict] = []
+    is_savings = payload.accountType == "savings"
+    # SavingsAccount does exist on this sandbox and books fine -- confirmed
+    # live (this workspace's CLAUDE.md previously claimed otherwise, based on
+    # an untested transcription; see console-app's known_issues.py history).
+    # productId is still "SavingsAccount" going into the same
+    # /holdings/accounts/savingsAccounts endpoint used elsewhere.
+    currency = "EUR" if is_savings else "USD"
     account_body = {
         "parties": [{"partyId": payload.partyId, "partyRole": "OWNER"}],
-        "productId": "CurrentAccount",
-        "currency": "USD",
-        "accountName": "Current Account",
+        "productId": "SavingsAccount" if is_savings else "CurrentAccount",
+        "currency": currency,
+        "accountName": "Savings Account" if is_savings else "Current Account",
         "openingDate": settings.system_date,
         "quotationReference": _ref("QUOT"),
     }
+    path = "savingsAccounts" if is_savings else "currentAccounts"
     result = await call(
-        "POST", f"{env.base_url_for('Deposits')}/holdings/accounts/currentAccounts", json=account_body, log=calls
+        "POST", f"{env.base_url_for('Deposits')}/holdings/accounts/{path}", json=account_body, log=calls
     )
     if not result.ok:
         raise HTTPException(400, {"errors": result.errors, "apiCalls": calls})
@@ -300,7 +309,7 @@ async def open_account(payload: OpenAccountPayload, request: Request):
             "paymentValueDate": settings.system_date,
             "creditAccount": account_id,
             "paymentAmount": payload.fundingAmount,
-            "creditCurrency": "USD",
+            "creditCurrency": currency,
             "paymentDescription": "Initial deposit",
         }
         await call("POST", f"{env.base_url_for('Deposits')}/order/payments/creditAccount", json=fund_body, log=calls)
