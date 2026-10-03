@@ -1,16 +1,15 @@
-# aekxuia Sandbox — Operational Notes
+# Sandbox Operational Notes
 
-Hard-won rules about the live Temenos Composable Banking sandbox
-(`aekxuia`, release 202604) that both apps in this repo bake in. Condensed
-from the source workspace's `CLAUDE.md`; kept here so this repo is
-self-contained.
+Hard-won rules about the Composable Banking APIs (the Azure `aekxuia` sandbox, release
+202604, and the local k3s modular pack) that this app encodes. Where the two differ it
+says so.
 
 ## Fixed constraints
 
 - **Business date**: `2025-03-14`. All date fields must use it.
 - **Company ID**: `GB0010001`. Holdings `{companyAccountId}` = `GB0010001-{accountId}`.
-- **No auth** on the sandbox APIs themselves -- see each app's `AUTH_MODE`
-  password gate for how the public Azure deployment protects against this.
+- **No auth** on the APIs themselves -- the app's `AUTH_MODE` password gate is what
+  protects the public Azure deployment.
 
 ## Request/response quirks
 
@@ -30,16 +29,18 @@ self-contained.
    fields, no `runningBalance`). Wrapped in `{items: [...]}`.
 4. **Account creation returns `{"accountId": "..."}`**, not
    `accountReference`/`id` (loan creation *does* use `accountReference`).
-5. **Consumer loan creation requires `disbursementAccount` +
+5. **Loan creation (`consumerLoans`, `mortgages`) requires `disbursementAccount` +
    `repaymentAccount`**, formatted as the composite reference
    `"deposits|{companyId}|{accountId}"` (e.g.
-   `"deposits|GB0010001|1013718397"`) -- **not** a plain account ID, per
-   the verified `Sandbox/03-demoflow-lending.py`. Omitting them fails with
+   `"deposits|GB0010001|1013718397"`) -- **not** a plain account ID. On the
+   local pack the composite must be wrapped in an object,
+   `{"accountId": "deposits|GB0010001|<id>"}` (see the local-pack section below). Omitting them fails with
    `"Payout Account is Mandatory."`; a still-missing `repaymentStartDate`/
    `repaymentFrequency` (`"Monthly"`) separately surfaces as
    `"NO CONSTANT OR LINEAR TYPE ON CALL CONTRACT"`. None of these four
-   fields are in the schema's `required` list. Loans **auto-disburse on
-   creation**, no separate disburse call.
+   fields are in the schema's `required` list. On aekxuia loans **auto-disburse on
+   creation**, no separate disburse call; the local pack does not pay them out.
+   Mortgages use `productId: "Mortgages"`.
 6. **Loan payment schedule** (`GET /holdings/lending/{accountId}/paymentSchedule`)
    response key is `paymentSchedules` (not `items`), amounts are formatted
    strings with thousands separators. `get-loan-details` is a separate,
@@ -76,5 +77,45 @@ self-contained.
 - `GET /holdings/deposits/{id}/balances` → `TGVCP-009` (use
   `GET /holdings/accounts/GB0010001-{id}/balances` instead)
 - `get-loan-details` → `TGVCP-007`
-- `SavingsAccount` product doesn't exist (use `CurrentAccount`)
 - `PersonalLoan` → HTTP 405 (use `ConsumerLoan` or `Mortgages`)
+
+## Payments and events
+
+**`paymentReservationReference` suppresses events.** Sending it on
+`POST /order/payments/creditAccount` (and likely the other payment calls) books the
+payment and returns `201` with a normal `BOOK.ENTRIES.API...` reference, but the
+success events (`accountingJournalEntriesUpdated`, `accountCredited`) are never
+published to `deposits-event-topic`, so Holdings, balances history and the Mobile
+tab never see the payment. Failure events are still published.
+
+- The field is the key of a fund reservation created by `POST /order/payments/reserveFunds`
+  (T24 stores it with a suffix, e.g. `RSV777001*CSM`). Crediting against an existing
+  one returns 400 `IRF-01` "Reservation Key ... Not Exists With Sign C" (reserveFunds
+  makes a debit-side hold); an unknown key is silently accepted (T24 records
+  `NOT.FOUND` on the entry and publishes nothing).
+- Do not send it unless you are settling a real reservation. The console's request
+  builder deliberately does not auto-fill it, although it fills other `*Reference`
+  fields.
+- The booking itself is unaffected, so the money is correct; only the event (and the
+  transaction line in Holdings) is lost. The next successful event on the account makes
+  Holdings' balance catch up.
+
+**Closing an account**: `PUT /holdings/accounts/{accountId}/closure`
+`{"effectiveDate": "2025-03-14", "narrative": "..."}`; the balance must be zero.
+
+## Local pack (k3s) differences
+
+- **Settlement accounts are objects.** The local Lending build rejects the string form
+  with "string found, object expected"; send `{"accountId": "deposits|GB0010001|<id>"}`.
+  A bare id inside the object can equal the new loan's own id and fail with "Settlement
+  Account and Arrangement Account cannot be same".
+- **Loan ids collide with deposit account ids.** Lending and Deposits allocate ids from
+  the same sequence in separate databases. When a loan id equals an existing deposit
+  account id, Holdings logs `duplicate key ... ms_altkey` and never registers the loan:
+  it is missing from `GET /holdings/parties/{id}/arrangements` and from
+  `GET /holdings/lending/parties/{id}/loans` (HMS-0003). Lending's `balances` and
+  `paymentSchedule` still answer for it, which is how the Mobile tab shows loans it
+  created.
+- **No payout.** There is no payments service in the pack, so the loan's
+  `requestInternalPayOut` is never consumed and no money reaches the settlement account.
+- Probing loan payloads creates real loans; use a throwaway party.

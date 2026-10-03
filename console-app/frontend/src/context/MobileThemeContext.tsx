@@ -35,7 +35,7 @@ export function MobileThemeProvider({ children }: { children: ReactNode }) {
   // (App.tsx) -- safe to coexist because every mobile-skin CSS custom
   // property is --mob- prefixed (see mobile-tokens.css) and every colliding
   // class name is scoped under .mobile-tab-content (see mobile.css), so
-  // this never leaks into the Catalog/Assistant/Flows tabs.
+  // this never leaks into the Catalog/Assistant tabs.
   useEffect(() => {
     document.documentElement.setAttribute("data-skin", skinId);
     localStorage.setItem(STORAGE_KEY, skinId);

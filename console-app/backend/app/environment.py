@@ -47,6 +47,10 @@ class EnvironmentConfig:
     seed: str
     region: str
     base_url_overrides: dict[str, str] = field(default_factory=dict)
+    # The local pack's Lending (202607) wants disbursementAccount/repaymentAccount
+    # as {"accountId": "deposits|GB0010001|<id>"} objects; aekxuia's (and the
+    # published spec) takes the same composite as a plain string.
+    settlement_accounts_as_objects: bool = False
 
     def base_urls(self) -> dict[str, str]:
         host = f"{self.prefix}{self.seed}.{self.region}.cloudapp.azure.com"
@@ -86,19 +90,18 @@ LOCAL_WSL_ENVIRONMENT = EnvironmentConfig(
         "Party": "http://host.docker.internal:8021/ms-party-api/api/v5.0.0",
         "Lending": "http://host.docker.internal:30030/irf-lending-container/api/v1.0.0",
     },
+    settlement_accounts_as_objects=True,
 )
-
-DEFAULT_ENVIRONMENT = AEKXUIA_ENVIRONMENT
 
 # Ordered so the UI's preset list has a stable, predictable order.
 PRESETS: dict[str, EnvironmentConfig] = {
-    "aekxuia": AEKXUIA_ENVIRONMENT,
     "local": LOCAL_WSL_ENVIRONMENT,
+    "aekxuia": AEKXUIA_ENVIRONMENT,
 }
 
 
 class EnvironmentStore:
-    def __init__(self, initial: EnvironmentConfig = DEFAULT_ENVIRONMENT):
+    def __init__(self, initial: EnvironmentConfig):
         self._env = initial
         self._active_preset = _preset_id_for(initial)
         self._lock = Lock()

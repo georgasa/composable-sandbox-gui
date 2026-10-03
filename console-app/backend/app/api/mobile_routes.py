@@ -15,7 +15,7 @@ from __future__ import annotations
 import random
 import string
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel
 
 from app.config import settings
@@ -81,6 +81,13 @@ class CreateLoanPayload(BaseModel):
     settlementAccountId: str  # disbursement + repayment account -- sandbox requires it ("Payout Account is Mandatory")
     amount: float
     term: str = "5Y"
+    loanType: str = "consumer"  # "consumer" | "mortgage"
+
+
+_LOAN_PRODUCTS = {
+    "consumer": {"productId": "ConsumerLoan", "path": "consumerLoans", "label": "Consumer Loan"},
+    "mortgage": {"productId": "Mortgages", "path": "mortgages", "label": "Mortgage"},
+}
 
 
 @router.post("/customer")
@@ -177,8 +184,31 @@ async def get_customer(party_id: str, request: Request):
     }
 
 
+async def _known_loans(env, loan_ids: str, listed: set[str], calls: list[dict]) -> list[dict]:
+    """Loans this app created, read straight from Lending. On the local pack
+    Lending and Deposits hand out the same account-id sequence, so a new
+    loan's id can equal an existing deposit account's id; Holdings then fails
+    to register the loan (duplicate alt-key) and it never shows up in the
+    party's arrangements. Lending's own balances endpoint still knows it."""
+    found: list[dict] = []
+    for loan_id in {i.strip() for i in loan_ids.split(",") if i.strip()} - listed:
+        result = await call(
+            "GET", f"{env.base_url_for('Lending')}/holdings/lending/{loan_id}/balances", log=calls
+        )
+        data = result.data if result.ok and isinstance(result.data, dict) else {}
+        if data.get("productId") in {p["productId"] for p in _LOAN_PRODUCTS.values()}:
+            found.append({
+                "accountId": loan_id,
+                "accountName": data.get("accountName") or data["productId"],
+                "currency": data.get("currency", "USD"),
+                "status": "CURRENT",
+                "workingBalance": 0,
+            })
+    return found
+
+
 @router.get("/customer/{party_id}/arrangements")
-async def get_arrangements(party_id: str, request: Request):
+async def get_arrangements(party_id: str, request: Request, knownLoanIds: str = Query("")):
     """Accounts + loans for the party, closed/pending-closure ones filtered
     out (the same fix verified and applied in discoverArrangements.ts --
     closed arrangements never disappear from this sandbox's own
@@ -191,7 +221,7 @@ async def get_arrangements(party_id: str, request: Request):
         "GET", f"{env.base_url_for('Holdings')}/holdings/parties/{party_id}/arrangements", log=calls
     )
     if not result.ok:
-        return {"accounts": [], "loans": [], "apiCalls": calls}
+        return {"accounts": [], "loans": await _known_loans(env, knownLoanIds, set(), calls), "apiCalls": calls}
 
     accounts: list[dict] = []
     loans: list[dict] = []
@@ -222,6 +252,7 @@ async def get_arrangements(party_id: str, request: Request):
                     entry["workingBalance"] = items[0].get("workingBalance", 0)
             accounts.append(entry)
 
+    loans += await _known_loans(env, knownLoanIds, {l["accountId"] for l in loans}, calls)
     return {"accounts": accounts, "loans": loans, "apiCalls": calls}
 
 
@@ -341,39 +372,69 @@ async def transfer(payload: TransferPayload, request: Request):
 @router.post("/loans")
 async def create_loan(payload: CreateLoanPayload, request: Request):
     env = request.app.state.environment
-    # disbursementAccount/repaymentAccount use the composite
-    # "deposits|{companyId}|{accountId}" reference format, NOT a plain
-    # account id -- matches Sandbox/03-demoflow-lending.py (100%-verified)
-    # exactly. A plain id was tried live and superficially "worked" (loan
-    # created, auto-disbursed), but it's not the documented/canonical
-    # format and the same live session hit "NO CONSTANT OR LINEAR TYPE ON
-    # CALL CONTRACT" with it -- repaymentStartDate/repaymentFrequency
-    # (also in the verified script, missing here before) are the likely
-    # fix for that specific error.
+    product = _LOAN_PRODUCTS.get(payload.loanType)
+    if not product:
+        raise HTTPException(400, {"errors": [f"Unknown loan type: {payload.loanType}"], "apiCalls": []})
     calls: list[dict] = []
-    settlement_ref = f"deposits|{settings.company_id}|{payload.settlementAccountId}"
+    # The settlement account is the composite "deposits|{companyId}|{accountId}"
+    # reference, not a plain id. aekxuia takes it as a string; the local pack's
+    # Lending wants it wrapped as {"accountId": <composite>} (a plain string is
+    # rejected with "string found, object expected"). The composite matters
+    # locally too: Lending and Deposits allocate account ids from overlapping
+    # sequences, and a bare id equal to the new loan's own id fails with
+    # "Settlement Account and Arrangement Account cannot be same".
+    composite = f"deposits|{settings.company_id}|{payload.settlementAccountId}"
+    settlement = {"accountId": composite} if env.get().settlement_accounts_as_objects else composite
     body = {
         "parties": [{"partyId": payload.partyId, "partyRole": "OWNER"}],
-        "productId": "ConsumerLoan",
+        "productId": product["productId"],
         "currency": "USD",
-        "accountName": f"Consumer Loan {payload.term}",
+        "accountName": f"{product['label']} {payload.term}",
         "loanAmount": payload.amount,
         "loanTerm": payload.term,
         "openingDate": settings.system_date,
         "repaymentStartDate": settings.system_date,
         "repaymentFrequency": "Monthly",
         "quotationReference": _ref("QUOT"),
-        "disbursementAccount": settlement_ref,
-        "repaymentAccount": settlement_ref,
+        "disbursementAccount": settlement,
+        "repaymentAccount": settlement,
     }
     result = await call(
-        "POST", f"{env.base_url_for('Lending')}/holdings/lending/consumerLoans", json=body,
+        "POST", f"{env.base_url_for('Lending')}/holdings/lending/{product['path']}", json=body,
         timeout=settings.long_request_timeout_seconds, log=calls,
     )
     if not result.ok:
         raise HTTPException(400, {"errors": result.errors, "apiCalls": calls})
     loan_id = result.data.get("accountReference") or result.data.get("id")
     return {"loanId": loan_id, "apiCalls": calls}
+
+
+@router.post("/accounts/{account_id}/close")
+async def close_account(account_id: str, request: Request):
+    env = request.app.state.environment
+    calls: list[dict] = []
+    # T24 refuses to close an account that still holds money; check first so
+    # the user gets a plain-language reason instead of a T24 error code. If the
+    # balance can't be read (Holdings lags on very new accounts) let T24 decide.
+    balance_result = await call(
+        "GET", f"{env.base_url_for('Holdings')}/holdings/accounts/{_company_account_id(account_id)}/balances",
+        log=calls,
+    )
+    if balance_result.ok:
+        items = (balance_result.data or {}).get("items") or []
+        working = items[0].get("workingBalance", 0) if items else 0
+        if working:
+            raise HTTPException(400, {
+                "errors": [f"The account must be empty before it can be closed (current balance {working})."],
+                "apiCalls": calls,
+            })
+    result = await call(
+        "PUT", f"{env.base_url_for('Deposits')}/holdings/accounts/{account_id}/closure",
+        json={"effectiveDate": settings.system_date, "narrative": "Account closure"}, log=calls,
+    )
+    if not result.ok:
+        raise HTTPException(400, {"errors": result.errors, "apiCalls": calls})
+    return {"ok": True, "apiCalls": calls}
 
 
 @router.get("/loans/{loan_id}/schedule")

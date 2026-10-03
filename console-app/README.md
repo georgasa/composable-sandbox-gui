@@ -1,104 +1,121 @@
 # Composable Banking Console
 
-A web console for exploring and calling every API in the Temenos Composable
-Banking `aekxuia` sandbox (release 202604). Browse the full catalog of 323
-operations across Party, Deposits, Holdings, and Lending, or describe what
-you want in plain English and let an LLM propose the matching API call --
-nothing ever fires against the real sandbox until you explicitly confirm it.
+The web app behind the repo: explore and call every API of the Temenos
+Composable Banking stack (Party, Deposits, Holdings, Lending -- 323 operations),
+let an LLM propose a call from plain English, or use the **Mobile** tab, a
+phone-frame banking demo driven by the same APIs. Nothing in the Catalog or
+Assistant fires against the real services until you explicitly confirm it.
 
-Also includes a **Mobile** tab -- a phone-frame mobile banking demo UI
-backed by the same sandbox, with a settings-driven look-and-feel skin
-picker -- sharing this app's login and party session rather than being a
-separate app/deployment.
-
-See [`../SANDBOX_NOTES.md`](../SANDBOX_NOTES.md) for the sandbox-specific
-rules baked into this app's `sandbox_rules.py` and `known_issues.py`.
+See [`../README.md`](../README.md) for what the tabs do, the environments and
+the Azure deployment, and [`../SANDBOX_NOTES.md`](../SANDBOX_NOTES.md) for the
+service behaviours this app encodes.
 
 ## Architecture
 
 ```
-frontend (React/nginx)
+frontend (React + nginx)
    |  /api/* proxied by nginx (lazy DNS resolution -- see nginx.conf.template)
    v
-backend (FastAPI)  ---builds catalog from--->  ../API-Event/*/swagger/*.yaml (baked into image)
+backend (FastAPI)  ---builds catalog from--->  ../API-Event/*/swagger/*.yaml (baked into the image)
    |  /api/assistant/query
    v
 OpenAI (gpt-4o-mini by default)
 ```
 
-- **Catalog**: parsed from all 10 OpenAPI spec files at backend startup,
-  keyed `service/sourceFile:METHOD:path` (not `operationId` -- 11
-  operationIds collide across files). Plus 5 supplemental operations that
-  are real and verified-working but absent from every spec (Holdings
-  `accountDetails`/`transactions`/`balances`/party `arrangements`, and the
-  flat `POST /party/parties`).
-- **Confirm-before-fire**: `/api/prepare` (catalog browser) and
-  `/api/assistant/query` (NL path) both only ever *propose* a call and
-  return a one-time-use `pendingExecutionId`. `/api/execute` is the only
-  route that calls the real sandbox, and it only accepts that token -- never
-  a raw operation. This is enforced server-side, not just hidden in the UI.
-- **NL assistant**: BM25 shortlists candidate operations from the query
-  text, then an LLM picks one and extracts parameters. Provider/model/API
-  key are editable live from the ⚙ Environment modal -- no restart needed.
-- **Environment switching**: the same modal edits label/prefix/seed/region,
-  and every service's base URL is derived from those automatically.
-- **Party session bar**: pin a party ID (or create a new demo party) and it
-  auto-fills into every subsequent `partyId` field; the party's open
-  accounts/loans are auto-discovered and offered as picker dropdowns
-  (closed/pending-closure arrangements are filtered out -- see
-  `frontend/src/utils/discoverArrangements.ts`).
-- **Known-issue banners**: sandbox quirks documented in the root
-  `CLAUDE.md` (broken endpoints, non-obvious required fields, response
-  shapes that differ from the spec) surface directly in the operation
-  detail and response views via `backend/app/catalog/known_issues.py`.
-- **Mobile tab**: a curated, direct-execute set of endpoints
-  (`backend/app/api/mobile_routes.py`, mounted at `/api/mobile`) drives a
-  phone-frame demo UI (`frontend/src/pages/MobileSimulator.tsx`). Reuses
-  the same party session as the other tabs (`context/PartyContext.tsx`) --
-  pin an existing party ID in the top bar, or create a new demo party from
-  the Mobile tab itself, and it's picked up everywhere. No confirm gate on
-  this tab's own endpoints: it's a small, curated, demo-safe operation set,
-  not the general catalog.
+- **Catalog**: parsed from the OpenAPI specs at backend startup, keyed
+  `service/sourceFile:METHOD:path` (not `operationId` -- 11 operationIds collide
+  across files). Plus 5 supplemental operations that are real and verified but
+  absent from every spec (Holdings `accountDetails`/`transactions`/`balances`,
+  party `arrangements`, and the flat `POST /party/parties`).
+- **Confirm-before-fire**: `/api/prepare` (Catalog) and `/api/assistant/query`
+  only ever *propose* a call and return a one-time `pendingExecutionId`.
+  `/api/execute` is the only route that calls the real services and only accepts
+  that token, never a raw operation. Enforced server-side.
+- **Request building** (`catalog/request_builder.py`, `execution/sandbox_rules.py`):
+  fills known-good defaults -- the fixed business date, company id, and
+  alphanumeric-only references. Auto-fill skips `paymentReservationReference`
+  (see `SANDBOX_NOTES.md`: it makes payments publish no events).
+- **NL assistant**: BM25 shortlists candidate operations, then an LLM picks one
+  and extracts parameters. Provider, model and key are editable live in the
+  Environment modal.
+- **Environments** (`environment.py`): two named presets, `local` (k3s pack via
+  `host.docker.internal`) and `aekxuia` (Azure). The starting preset is the
+  `DEFAULT_ENVIRONMENT` setting; the modal switches at runtime. The preset also
+  carries per-environment request-shape differences (for example how Lending
+  wants settlement accounts written).
+- **Party session bar**: pin a party ID (or create a demo party) and it
+  auto-fills into every `partyId` field; the party's accounts and loans are
+  offered as pickers (closed accounts are filtered out).
+- **Known-issue banners** (`catalog/known_issues.py`): broken endpoints and
+  non-obvious required fields are shown in the operation detail and responses.
 
-## Run it locally
+## Mobile tab
 
-From the **repo root**:
+A curated, direct-execute set of endpoints (`backend/app/api/mobile_routes.py`,
+mounted at `/api/mobile`) drives the phone UI
+(`frontend/src/pages/MobileSimulator.tsx`). It reuses the app-wide party session.
+There is no confirm gate here: it is a small, demo-safe operation set, not a
+"call anything" console.
 
-```bash
-docker compose up -d --build console-backend console-frontend
-```
+| Action | Calls |
+|---|---|
+| Create demo customer | `POST /party/parties`, open a current account, fund it |
+| Open current / savings account | `POST /holdings/accounts/{currentAccounts,savingsAccounts}`, optional funding credit |
+| Transfer | `POST /order/payments/internalTransfer` |
+| Personal loan / mortgage | `POST /holdings/lending/{consumerLoans,mortgages}` |
+| Close account | read the Holdings balance, then `PUT /holdings/accounts/{id}/closure` (refused with a reason unless the balance is 0) |
+| View transactions / loan schedule | Holdings `transactions`, Lending `paymentSchedule` |
 
-Open **http://localhost:8091**. No password gate locally (`AUTH_MODE=none`
-by default) -- see [Auth](#auth) below.
+How the frontend behaves (`frontend/src/context/MobileSessionContext.tsx`):
 
-### AI Assistant setup
+- **Under the Hood** shows only the calls of the last *user action*, with a label,
+  and keeps the calls of an action that failed. Loading and background refreshes
+  are deliberately excluded.
+- **15 second poll** re-reads the customer and accounts silently (no loading
+  state, no panel update), so changes made in other tabs or tools appear.
+- **Known loans**: the loan ids this browser created are remembered per party in
+  `localStorage` and read from Lending's own `balances` endpoint, because on the
+  local pack a loan can be missing from Holdings (id collision, see
+  `SANDBOX_NOTES.md`).
 
-The Assistant tab needs an OpenAI API key. Paste one into
-⚙ Environment → AI Assistant in the running app -- it's saved to a local,
-git-ignored file (`console-app/data/llm_config.json`, bind-mounted, never
-baked into the image) and survives container rebuilds. Catalog browsing and
-the confirm/execute pipeline work immediately without any key.
+## Run and redeploy
 
-## Auth
-
-`AUTH_MODE` env var: `none` (default, local dev -- no login screen) or
-`password` (used on the Azure deployment, since the underlying sandbox has
-no auth of its own and the app is the only thing gating it from the public
-internet). See `backend/app/auth.py`.
-
-## Redeploying after a code change
+From the repo root:
 
 ```bash
-docker compose up -d --build console-backend    # or console-frontend
+docker compose up -d --build                  # both services
+docker compose up -d --build console-backend  # after a backend change
+docker compose up -d --build console-frontend # after a frontend change
 ```
+
+Open **http://localhost:8091**. After the backend restarts the app returns to its
+`DEFAULT_ENVIRONMENT`.
+
+### AI Assistant
+
+Paste an OpenAI key into Environment -> AI Assistant in the running app. It is
+saved to a git-ignored file (`console-app/data/llm_config.json`, bind-mounted,
+never baked into the image) and survives rebuilds. The Catalog and the
+confirm/execute pipeline need no key.
+
+## Configuration
+
+Environment variables on the backend (see `backend/app/config.py`):
+
+| Variable | Meaning |
+|---|---|
+| `DEFAULT_ENVIRONMENT` | `local` (compose default) or `aekxuia` (Azure) |
+| `COMPANY_ID`, `SYSTEM_DATE` | `GB0010001`, `2025-03-14` -- the fixed company and business date |
+| `AUTH_MODE`, `DEMO_PASSWORD` | `none` locally; `password` on Azure (the services themselves have no auth) |
+| `LLM_PROVIDER`, `OPENAI_*`, `OLLAMA_*` | initial assistant provider settings |
+| `REQUEST_TIMEOUT_SECONDS`, `LONG_REQUEST_TIMEOUT_SECONDS` | per-call timeouts (lending creates use the long one) |
 
 ## Known limitations
 
-- `pending_store` is in-process memory in the single backend container --
-  don't run multiple backend replicas without moving it to Redis first.
-- Base-URL resolution per operation is a best-effort default (see the long
-  comment in `backend/app/catalog/loader.py`). Every prepared request's URL
-  is visible in the confirm step before firing, so a wrong guess is caught
-  by inspection, not by chance.
-- The separate "Transact Lending API v8" base URL has no OpenAPI spec in
-  this workspace and is not covered by this catalog.
+- `pending_store` is in-process memory in the single backend container -- do not
+  run several backend replicas without moving it to Redis first.
+- Base-URL resolution per operation is a best-effort default (see the comment in
+  `backend/app/catalog/loader.py`); every prepared request shows its URL in the
+  confirm step before it fires.
+- The "Transact Lending API v8" endpoint has no OpenAPI spec here and is not
+  covered by the Catalog.

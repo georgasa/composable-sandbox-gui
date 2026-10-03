@@ -24,11 +24,6 @@ SUB_ID=$(az account show --query id -o tsv)
 
 DEMO_PASSWORD="${DEMO_PASSWORD:?Set DEMO_PASSWORD before running (the shared password that gates the public demo URL)}"
 
-DEPOSITS_BASE_URL="http://deposits-aekxuia0951.westeurope.cloudapp.azure.com/irf-deposits-container/api/v1.0.0"
-HOLDINGS_BASE_URL="http://aekxuia0951.westeurope.cloudapp.azure.com/ms-holdings-api/api/v1.0.0"
-PARTY_BASE_URL="http://aekxuia0951.westeurope.cloudapp.azure.com/ms-party-api/api/v5.0.0"
-LENDING_BASE_URL="http://lending-aekxuia0951.westeurope.cloudapp.azure.com/irf-lending-container/api/v1.0.0"
-
 echo "== 1/5: ACR =="
 az acr create -g "$RG" -n "$ACR_NAME" --sku Basic --admin-enabled true --only-show-errors -o none
 
@@ -49,8 +44,7 @@ az containerapp create -g "$RG" -n console-backend --environment "$ENV_NAME" \
   --registry-server "$ACR_SERVER" --registry-username "$ACR_USER" --registry-password "$ACR_PASS" \
   --ingress internal --target-port 8000 --min-replicas 0 --max-replicas 1 \
   --cpu 0.5 --memory 1.0Gi \
-  --env-vars DEPOSITS_BASE_URL="$DEPOSITS_BASE_URL" HOLDINGS_BASE_URL="$HOLDINGS_BASE_URL" \
-    PARTY_BASE_URL="$PARTY_BASE_URL" LENDING_BASE_URL="$LENDING_BASE_URL" \
+  --env-vars DEFAULT_ENVIRONMENT=aekxuia \
     COMPANY_ID=GB0010001 SYSTEM_DATE=2025-03-14 \
     AUTH_MODE=password DEMO_PASSWORD="$DEMO_PASSWORD" \
     LLM_PROVIDER=openai OPENAI_MODEL=gpt-4o-mini \

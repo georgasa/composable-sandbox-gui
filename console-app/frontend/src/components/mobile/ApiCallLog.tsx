@@ -3,6 +3,7 @@ import type { ApiCallRecord } from "../../types/mobile";
 
 interface Props {
   calls: ApiCallRecord[];
+  actionLabel: string;
 }
 
 /** Strips the sandbox host so the log reads as a path, matching how the
@@ -46,12 +47,13 @@ function CallRow({ call }: { call: ApiCallRecord }) {
 }
 
 /** Renders the exact real HTTP calls the backend fired at the live sandbox
- * for the most recent Mobile tab action -- the transparency mechanism for
+ * for the most recent user action in the Mobile tab (background refreshes
+ * are excluded) -- the transparency mechanism for
  * a "curated, direct-execute" tab that (unlike the Catalog tab's
  * prepare/confirm/execute pipeline) has no built-in request preview of its
  * own. See MobileSessionContext's lastApiCalls and
  * backend/app/mobile_sandbox_client.py's `log` param. */
-export function ApiCallLog({ calls }: Props) {
+export function ApiCallLog({ calls, actionLabel }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -68,7 +70,7 @@ export function ApiCallLog({ calls }: Props) {
           ) : (
             <>
               <div className="api-call-log-hint">
-                Every real HTTP call the last action made against the live sandbox, in order:
+                Last action: <b>{actionLabel}</b> — the real calls it made against the sandbox, in order:
               </div>
               {calls.map((c, i) => (
                 <CallRow call={c} key={i} />

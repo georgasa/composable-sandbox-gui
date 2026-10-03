@@ -1,19 +1,16 @@
-"""Environment-driven configuration. In k8s this is populated by the
-console-app-config ConfigMap; locally it falls back to the values already
-verified against the live aekxuia sandbox in this workspace's CLAUDE.md."""
+"""Environment-driven configuration (process environment variables, set by
+docker-compose.yml locally and by infra/provision.sh on Azure)."""
 
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    # Initial values for the runtime-editable environment (see
-    # app/environment.py) -- base URLs are derived from these, not fixed.
-    # Editing the environment via PUT /api/environment overrides this at
-    # runtime; these are only the values the process boots with.
-    env_label: str = "aekxuia (R26.04)"
-    env_prefix: str = "aekxuia"
-    env_seed: str = "0951"
-    env_region: str = "westeurope"
+    # Which named preset (app/environment.py PRESETS) the process boots with:
+    # "local" (the k3s pack on this machine, the default for Docker Compose)
+    # or "aekxuia" (the Azure sandbox -- what the public Azure deployment
+    # pins, since it can't reach a local pack). Switchable at runtime from
+    # the Environment modal.
+    default_environment: str = "local"
 
     company_id: str = "GB0010001"
     system_date: str = "2025-03-14"

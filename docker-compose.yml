@@ -11,10 +11,10 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DEPOSITS_BASE_URL: "http://deposits-aekxuia0951.westeurope.cloudapp.azure.com/irf-deposits-container/api/v1.0.0"
-      HOLDINGS_BASE_URL: "http://aekxuia0951.westeurope.cloudapp.azure.com/ms-holdings-api/api/v1.0.0"
-      PARTY_BASE_URL: "http://aekxuia0951.westeurope.cloudapp.azure.com/ms-party-api/api/v5.0.0"
-      LENDING_BASE_URL: "http://lending-aekxuia0951.westeurope.cloudapp.azure.com/irf-lending-container/api/v1.0.0"
+      # Which environment preset the app starts on: "local" (the k3s pack under
+      # this machine's WSL -- see extra_hosts below) or "aekxuia" (the Azure
+      # sandbox). Switchable at runtime from the Environment modal.
+      DEFAULT_ENVIRONMENT: "${DEFAULT_ENVIRONMENT:-local}"
       COMPANY_ID: "GB0010001"
       SYSTEM_DATE: "2025-03-14"
       LLM_PROVIDER: "${LLM_PROVIDER:-openai}"

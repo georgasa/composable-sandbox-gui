@@ -7,12 +7,9 @@ import { ResponseViewer } from "./ResponseViewer";
 import { useParty } from "../context/PartyContext";
 import { seedPartyId } from "../utils/seedParty";
 
-/** The detail -> form -> confirm -> response panel, extracted out of
- * CatalogBrowser so the curated demo Flows page can reuse the exact same
- * pipeline for a fixed handful of operations instead of duplicating it.
- * Self-contained: owns its own detail/params/prepared/executed state keyed
- * off `opKey`, so multiple instances (e.g. two flow cards side by side)
- * never interfere with each other. */
+/** The detail -> form -> confirm -> response panel for one catalog
+ * operation. Self-contained: owns its own detail/params/prepared/executed
+ * state keyed off `opKey`. */
 export function OperationWorkbench({ opKey }: { opKey: string }) {
   const { activePartyId } = useParty();
   const [detail, setDetail] = useState<OperationDetail | null>(null);

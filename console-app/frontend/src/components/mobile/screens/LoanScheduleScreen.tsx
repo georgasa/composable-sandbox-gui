@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../../../api/client";
+import { useMobileSession } from "../../../context/MobileSessionContext";
 import type { LoanScheduleEntry } from "../../../types/mobile";
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export function LoanScheduleScreen({ loanId, onBack }: Props) {
+  const { recordCalls } = useMobileSession();
   const [items, setItems] = useState<LoanScheduleEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,8 +17,12 @@ export function LoanScheduleScreen({ loanId, onBack }: Props) {
     setLoading(true);
     api
       .getMobileLoanSchedule(loanId)
-      .then((r) => setItems(r.items))
+      .then((r) => {
+        setItems(r.items);
+        recordCalls("View loan payment schedule", r.apiCalls);
+      })
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loanId]);
 
   return (

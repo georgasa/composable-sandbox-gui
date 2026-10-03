@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMobileSession } from "../../../context/MobileSessionContext";
 
 function formatCurrency(amount: number, currency: string): string {
@@ -11,6 +11,16 @@ interface Props {
 
 export function DashboardScreen({ onSelectAccount }: Props) {
   const { customer, accounts, loading, refresh, openAccount } = useMobileSession();
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const handleOpen = async (fundingAmount: number | undefined, type: "current" | "savings") => {
+    setActionError(null);
+    try {
+      await openAccount(fundingAmount, type);
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : String(e));
+    }
+  };
 
   useEffect(() => {
     refresh();
@@ -43,10 +53,11 @@ export function DashboardScreen({ onSelectAccount }: Props) {
         <div className="empty-state">{loading ? "Loading..." : "No accounts yet"}</div>
       )}
 
-      <button className="btn btn-secondary btn-block" onClick={() => openAccount(1000)} disabled={loading}>
+      {actionError && <div className="error-banner">{actionError}</div>}
+      <button className="btn btn-secondary btn-block" onClick={() => handleOpen(1000, "current")} disabled={loading}>
         + Open Current Account
       </button>
-      <button className="btn btn-secondary btn-block" onClick={() => openAccount(undefined, "savings")} disabled={loading}>
+      <button className="btn btn-secondary btn-block" onClick={() => handleOpen(undefined, "savings")} disabled={loading}>
         + Open Savings Account
       </button>
     </div>

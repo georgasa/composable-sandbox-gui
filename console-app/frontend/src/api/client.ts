@@ -25,6 +25,17 @@ import type {
 // address, and there is no CORS configuration anywhere as a result.
 const BASE = "/api";
 
+/** A failed request. Mobile endpoints fail with {errors: string[], apiCalls: [...]}
+ * -- the sandbox calls that were made before it failed are kept so the
+ * "Under the Hood" panel can still show them. */
+export class ApiError extends Error {
+  apiCalls: ApiCallRecord[];
+  constructor(message: string, apiCalls: ApiCallRecord[] = []) {
+    super(message);
+    this.apiCalls = apiCalls;
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     ...init,
@@ -32,7 +43,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail ? JSON.stringify(body.detail) : `HTTP ${res.status}`);
+    const detail = body.detail;
+    if (detail && Array.isArray(detail.errors)) {
+      throw new ApiError(detail.errors.join("; "), detail.apiCalls ?? []);
+    }
+    throw new ApiError(detail ? (typeof detail === "string" ? detail : JSON.stringify(detail)) : `HTTP ${res.status}`);
   }
   return res.json();
 }
@@ -126,9 +141,9 @@ export const api = {
 
   getMobileCustomer: (partyId: string) => request<CustomerInfo>(`/mobile/customer/${partyId}`),
 
-  getMobileArrangements: (partyId: string) =>
+  getMobileArrangements: (partyId: string, knownLoanIds: string[] = []) =>
     request<{ accounts: AccountInfo[]; loans: AccountInfo[]; apiCalls: ApiCallRecord[] }>(
-      `/mobile/customer/${partyId}/arrangements`
+      `/mobile/customer/${partyId}/arrangements?knownLoanIds=${encodeURIComponent(knownLoanIds.join(","))}`
     ),
 
   getMobileTransactions: (accountId: string) =>
@@ -148,11 +163,20 @@ export const api = {
       body: JSON.stringify({ fromAccountId, toAccountId, amount, description }),
     }),
 
-  createMobileLoan: (partyId: string, settlementAccountId: string, amount: number, term: string) =>
+  createMobileLoan: (
+    partyId: string,
+    settlementAccountId: string,
+    amount: number,
+    term: string,
+    loanType: "consumer" | "mortgage"
+  ) =>
     request<{ loanId: string | null; apiCalls: ApiCallRecord[] }>("/mobile/loans", {
       method: "POST",
-      body: JSON.stringify({ partyId, settlementAccountId, amount, term }),
+      body: JSON.stringify({ partyId, settlementAccountId, amount, term, loanType }),
     }),
+
+  closeMobileAccount: (accountId: string) =>
+    request<{ ok: boolean; apiCalls: ApiCallRecord[] }>(`/mobile/accounts/${accountId}/close`, { method: "POST" }),
 
   getMobileLoanSchedule: (loanId: string) =>
     request<{ items: LoanScheduleEntry[]; apiCalls: ApiCallRecord[] }>(`/mobile/loans/${loanId}/schedule`),

@@ -22,6 +22,11 @@ _DATE_NAME_RE = re.compile(
 _ALPHANUMERIC_RE = re.compile(r"^[A-Za-z0-9]+$")
 
 
+# Sending paymentReservationReference makes Deposits book the payment (201) but
+# silently skip publishing its Kafka events, so Holdings/Mobile never update.
+_NO_AUTOFILL_FIELDS = {"paymentReservationReference"}
+
+
 def is_reference_field(name: str) -> bool:
     return bool(_REFERENCE_NAME_RE.search(name))
 
@@ -78,6 +83,8 @@ def autofill_hint_for(name: str, schema: dict[str, Any] | None) -> dict[str, Any
             "reason": f"Holdings composite ID format: {settings.company_id}-{{accountId}}. "
                       f"Append the account ID.",
         }
+    if name in _NO_AUTOFILL_FIELDS:
+        return None
     if is_reference_field(name):
         prefix = re.sub(r"[Rr]eference$", "", name).upper()[:6] or "REF"
         return {

@@ -1,29 +1,103 @@
 import { useState } from "react";
-import { useMobileSession } from "../../../context/MobileSessionContext";
+import { useMobileSession, type LoanType } from "../../../context/MobileSessionContext";
 
 interface Props {
   onSelectLoan: (loanId: string) => void;
 }
 
+interface LoanProduct {
+  label: string;
+  newLabel: string;
+  promoTitle: string;
+  promoBody: string;
+  min: number;
+  max: number;
+  defaultAmount: number;
+  terms: { value: string; label: string }[];
+  defaultTerm: string;
+}
+
+const PRODUCTS: Record<LoanType, LoanProduct> = {
+  consumer: {
+    label: "Personal loan",
+    newLabel: "+ New Personal Loan",
+    promoTitle: "⚡ Get up to $20,000 — in minutes",
+    promoBody:
+      "Pre-approved, no branch visit, no physical paperwork, no waiting days for a decision. " +
+      "Apply from your phone and have funds in your account in minutes, not weeks.",
+    min: 1000,
+    max: 20000,
+    defaultAmount: 20000,
+    terms: [
+      { value: "1Y", label: "1 year" },
+      { value: "3Y", label: "3 years" },
+      { value: "5Y", label: "5 years" },
+      { value: "10Y", label: "10 years" },
+    ],
+    defaultTerm: "5Y",
+  },
+  mortgage: {
+    label: "Mortgage",
+    newLabel: "+ New Mortgage",
+    promoTitle: "🏡 Your home, on your terms",
+    promoBody:
+      "Borrow up to $500,000 with terms of up to 30 years and predictable monthly repayments. " +
+      "Apply in the app, track your repayment schedule any time, and pay off early when you are ready.",
+    min: 50000,
+    max: 500000,
+    defaultAmount: 250000,
+    terms: [
+      { value: "10Y", label: "10 years" },
+      { value: "15Y", label: "15 years" },
+      { value: "20Y", label: "20 years" },
+      { value: "25Y", label: "25 years" },
+      { value: "30Y", label: "30 years" },
+    ],
+    defaultTerm: "20Y",
+  },
+};
+
+function formatMoney(n: number): string {
+  return `$${n.toLocaleString("en-US")}`;
+}
+
 export function LoansScreen({ onSelectLoan }: Props) {
   const { loans, accounts, createLoan, loading } = useMobileSession();
+  const [loanType, setLoanType] = useState<LoanType>("consumer");
   const [showForm, setShowForm] = useState(false);
-  const [amount, setAmount] = useState("50000");
-  const [term, setTerm] = useState("5Y");
+  const [amount, setAmount] = useState(String(PRODUCTS.consumer.defaultAmount));
+  const [term, setTerm] = useState(PRODUCTS.consumer.defaultTerm);
   const [settlementAccountId, setSettlementAccountId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const product = PRODUCTS[loanType];
+  // Loans are in USD, so only USD accounts can receive and repay them.
+  const settlementAccounts = accounts.filter((a) => a.currency === "USD");
+
+  const selectType = (type: LoanType) => {
+    setLoanType(type);
+    setAmount(String(PRODUCTS[type].defaultAmount));
+    setTerm(PRODUCTS[type].defaultTerm);
+    setError(null);
+    setShowForm(false);
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!settlementAccountId || !amount) return;
+    const value = Number(amount);
+    if (!settlementAccountId || !value) return;
+    if (value < product.min || value > product.max) {
+      setError(`Amount must be between ${formatMoney(product.min)} and ${formatMoney(product.max)}.`);
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
-      await createLoan(settlementAccountId, parseFloat(amount), term);
+      await createLoan(settlementAccountId, value, term, loanType);
       setShowForm(false);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSubmitting(false);
     }
@@ -48,49 +122,64 @@ export function LoansScreen({ onSelectLoan }: Props) {
         <div className="empty-state">No loans yet</div>
       )}
 
-      {!showForm ? (
-        <>
-          <div className="promo-card">
-            <div className="promo-card-title">⚡ Get up to $20,000 — in minutes</div>
-            <div className="promo-card-body">
-              Pre-approved, no branch visit, no physical paperwork, no waiting days for a decision.
-              Apply from your phone and have funds in your account in minutes, not weeks.
-            </div>
-          </div>
-          <button className="btn btn-secondary btn-block" onClick={() => setShowForm(true)} disabled={accounts.length === 0}>
-            + New Consumer Loan
+      <div className="segmented">
+        {(Object.keys(PRODUCTS) as LoanType[]).map((type) => (
+          <button
+            key={type}
+            type="button"
+            className={`segmented-option${loanType === type ? " active" : ""}`}
+            onClick={() => selectType(type)}
+          >
+            {PRODUCTS[type].label}
           </button>
-        </>
+        ))}
+      </div>
+
+      <div className="promo-card">
+        <div className="promo-card-title">{product.promoTitle}</div>
+        <div className="promo-card-body">{product.promoBody}</div>
+      </div>
+
+      {!showForm ? (
+        <button className="btn btn-secondary btn-block" onClick={() => setShowForm(true)} disabled={accounts.length === 0}>
+          {product.newLabel}
+        </button>
       ) : (
         <form className="form-stack" onSubmit={handleCreate}>
-          <label className="field-label">Settlement account</label>
+          <label className="field-label">Settlement account (USD)</label>
           <select className="text-input" value={settlementAccountId} onChange={(e) => setSettlementAccountId(e.target.value)}>
             <option value="">-- select account --</option>
-            {accounts.map((a) => (
+            {settlementAccounts.map((a) => (
               <option key={a.accountId} value={a.accountId}>
                 {a.accountName} (...{a.accountId.slice(-4)})
               </option>
             ))}
           </select>
-          <label className="field-label">Amount (USD, up to $20,000)</label>
+          {settlementAccounts.length === 0 && (
+            <div className="hint-box">Open a USD account first — loans are paid out to and repaid from a USD account.</div>
+          )}
+          <label className="field-label">
+            Amount (USD, {formatMoney(product.min)} – {formatMoney(product.max)})
+          </label>
           <input
             className="text-input"
             type="number"
-            min="1000"
-            max="20000"
+            min={product.min}
+            max={product.max}
             value={amount}
-            onChange={(e) => setAmount(Math.min(20000, Number(e.target.value) || 0).toString())}
+            onChange={(e) => setAmount(e.target.value)}
           />
           <label className="field-label">Term</label>
           <select className="text-input" value={term} onChange={(e) => setTerm(e.target.value)}>
-            <option value="1Y">1 year</option>
-            <option value="3Y">3 years</option>
-            <option value="5Y">5 years</option>
-            <option value="10Y">10 years</option>
+            {product.terms.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
           </select>
           {error && <div className="error-banner">{error}</div>}
           <button className="btn btn-primary btn-block" type="submit" disabled={submitting || loading || !settlementAccountId}>
-            {submitting ? "Creating..." : "Create Loan"}
+            {submitting ? "Creating..." : `Create ${product.label}`}
           </button>
         </form>
       )}

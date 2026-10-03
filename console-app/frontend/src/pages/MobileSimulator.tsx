@@ -16,7 +16,7 @@ type Tab = "home" | "transfer" | "loans" | "profile";
 type Screen = Tab | "transactions" | "loan-schedule" | "settings";
 
 /** The Mobile tab -- a phone-frame demo UI driven by the SAME party session
- * (PartyContext, mounted in main.tsx) the Catalog/Assistant/Flows tabs use.
+ * (PartyContext, mounted in main.tsx) the Catalog/Assistant tabs use.
  * No separate auth/login of its own: the app-wide AuthGate (App.tsx)
  * already covers this tab, and "reusing an existing party" is just typing
  * an ID into the party bar above (PartySessionBar) -- MobileSessionContext
@@ -32,7 +32,7 @@ export function MobileSimulator() {
 }
 
 function Shell() {
-  const { partyId, lastApiCalls } = useMobileSession();
+  const { partyId, lastApiCalls, lastActionLabel } = useMobileSession();
   const [screen, setScreen] = useState<Screen>("home");
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
@@ -88,7 +88,7 @@ function Shell() {
             </>
           )}
         </PhoneFrame>
-        <ApiCallLog calls={lastApiCalls} />
+        <ApiCallLog calls={lastApiCalls} actionLabel={lastActionLabel} />
       </div>
     </div>
   );

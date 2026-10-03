@@ -625,3 +625,59 @@ unprefixed name here would silently override those app-wide. */
   max-height: 220px;
   overflow-y: auto;
 }
+
+
+/* ---------- segmented control, hint box, danger button ---------- */
+.segmented {
+  display: flex;
+  background: var(--mob-card-alt);
+  border-radius: var(--mob-radius-sm);
+  padding: 3px;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+.segmented-option {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--mob-text-dim);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 6px;
+  border-radius: calc(var(--mob-radius-sm) - 2px);
+  cursor: pointer;
+}
+
+.segmented-option.active {
+  background: var(--mob-card);
+  color: var(--mob-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.hint-box {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--mob-text-dim);
+  background: var(--mob-card-alt);
+  border-radius: var(--mob-radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--mob-negative);
+  border: 1px solid var(--mob-negative);
+  font: inherit;
+  font-weight: 600;
+  padding: 11px 14px;
+  border-radius: var(--mob-radius-sm);
+  cursor: pointer;
+}
+
+.btn-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
