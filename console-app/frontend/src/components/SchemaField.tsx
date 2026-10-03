@@ -8,9 +8,11 @@ import { AccountPicker } from "./AccountPicker";
  * known payment-field names) so it doesn't false-positive on
  * accountName/accountOfficer/accountReference, which are names/references,
  * not IDs. */
-function accountFieldKind(name: string): "account" | "loan" | null {
+function accountFieldKind(name: string, service?: string): "account" | "loan" | null {
   const n = name.toLowerCase();
   if (n.includes("loanid")) return "loan";
+  // On Lending operations the {accountId} path parameter is the loan's id.
+  if (service === "Lending" && n.includes("accountid")) return "loan";
   if (n.includes("accountid") || n === "debitaccount" || n === "creditaccount") return "account";
   return null;
 }
@@ -30,13 +32,15 @@ interface Props {
   required?: boolean;
   hint?: AutofillHint;
   depth?: number;
+  /** Service of the operation, for top-level path/query params only. */
+  service?: string;
 }
 
 function isNumericType(schema: JsonSchema): boolean {
   return schema.type === "number" || schema.type === "integer";
 }
 
-export function SchemaField({ name, schema, value, onChange, required, hint, depth = 0 }: Props) {
+export function SchemaField({ name, schema, value, onChange, required, hint, depth = 0, service }: Props) {
   const label = (
     <label className="field-label">
       {name}
@@ -171,7 +175,7 @@ export function SchemaField({ name, schema, value, onChange, required, hint, dep
 
   // --- string / number / integer (default text-ish input) ---
   const inputType = schema.format === "date" ? "date" : isNumericType(schema) ? "number" : "text";
-  const pickerKind = accountFieldKind(name);
+  const pickerKind = accountFieldKind(name, service);
   const inputClassName = `field-input${wasAutofilled ? " autofilled" : ""}`;
 
   return (

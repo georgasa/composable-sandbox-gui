@@ -31,6 +31,7 @@ export function ParamForm({ detail, params, onChange }: Props) {
               required={p.required}
               hint={detail.autofillHints[p.name]}
               onChange={(v) => setField(p.name, v)}
+              service={detail.service}
             />
           ))}
         </>

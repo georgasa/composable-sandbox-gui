@@ -69,13 +69,41 @@ function toDiscovered(raw: RawArrangement): DiscoveredArrangement | null {
  * is a background enrichment, not a user-initiated action the UI should
  * block on. */
 export async function discoverArrangements(partyId: string): Promise<DiscoveredArrangement[]> {
+  let found: DiscoveredArrangement[] = [];
   try {
     const prepared = await api.prepare(ARRANGEMENTS_OP_KEY, { partyId });
     const result = await api.execute(prepared.pendingExecutionId);
-    if (!result.ok) return [];
-    const raw = (result.data as { arrangements?: RawArrangement[] })?.arrangements || [];
-    return raw.map(toDiscovered).filter((a): a is DiscoveredArrangement => a !== null);
+    if (result.ok) {
+      const raw = (result.data as { arrangements?: RawArrangement[] })?.arrangements || [];
+      found = raw.map(toDiscovered).filter((a): a is DiscoveredArrangement => a !== null);
+    }
+  } catch {
+    // background enrichment: fall through with whatever we have
+  }
+  return [...found, ...knownLoans(partyId, found)];
+}
+
+/** Loans created in the Mobile tab. On the local pack Holdings can fail to
+ * register a new loan (its id collides with a deposit account id), so the
+ * arrangements call above never returns it -- see mobile_routes.py
+ * _known_loans. The Mobile tab remembers the ids per party in localStorage. */
+function knownLoans(partyId: string, already: DiscoveredArrangement[]): DiscoveredArrangement[] {
+  let ids: string[] = [];
+  try {
+    ids = JSON.parse(localStorage.getItem(`mobile-loans-${partyId}`) || "[]");
   } catch {
     return [];
   }
+  const listed = new Set(already.filter((a) => a.kind === "loan").map((a) => a.accountId));
+  return ids
+    .filter((id) => !listed.has(id))
+    .map((id) => ({
+      accountId: id,
+      companyAccountId: `GB0010001-${id}`,
+      label: `Loan · USD · created in Mobile · ${id}`,
+      typeLabel: "Loan",
+      kind: "loan" as const,
+      currency: "USD",
+      status: "CURRENT",
+    }));
 }

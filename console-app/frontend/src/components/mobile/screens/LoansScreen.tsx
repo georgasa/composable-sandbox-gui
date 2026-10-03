@@ -41,17 +41,18 @@ const PRODUCTS: Record<LoanType, LoanProduct> = {
     newLabel: "+ New Mortgage",
     promoTitle: "🏡 Your home, on your terms",
     promoBody:
-      "Borrow up to $500,000 with terms of up to 30 years and predictable monthly repayments. " +
+      "Borrow up to $500,000 over up to 20 years with predictable monthly repayments. " +
       "Apply in the app, track your repayment schedule any time, and pay off early when you are ready.",
     min: 50000,
     max: 500000,
     defaultAmount: 250000,
+    // Capped at 20 years: the sandbox's holiday calendar ends in 2049 and the
+    // business date is fixed at 2025-03-14, so longer terms fail with
+    // "HOLIDAY TABLE MISSING FOR GB00xxxx".
     terms: [
       { value: "10Y", label: "10 years" },
       { value: "15Y", label: "15 years" },
       { value: "20Y", label: "20 years" },
-      { value: "25Y", label: "25 years" },
-      { value: "30Y", label: "30 years" },
     ],
     defaultTerm: "20Y",
   },

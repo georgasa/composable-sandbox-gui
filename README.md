@@ -23,7 +23,7 @@ the Mobile tab -- and every tab picks it up.
 - **Accounts**: open current and savings accounts, view transactions, transfer
   between your own accounts.
 - **Loans**: switch between **Personal loan** (up to $20,000, 1-10 years) and
-  **Mortgage** (up to $500,000, 10-30 years), each with its own offer text.
+  **Mortgage** (up to $500,000, 10-20 years), each with its own offer text.
   Loans are paid out to and repaid from a USD account.
 - **Close an account**: from the account screen. The account must be empty
   (balance 0) first -- the button explains this and stays disabled until then.

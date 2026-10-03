@@ -118,4 +118,8 @@ tab never see the payment. Failure events are still published.
   created.
 - **No payout.** There is no payments service in the pack, so the loan's
   `requestInternalPayOut` is never consumed and no money reaches the settlement account.
+- **Terms are limited by the holiday calendar.** The GB holiday tables stop at 2049 and the
+  business date is fixed at 2025-03-14, so a term longer than 24 years fails with
+  `HOLIDAY TABLE MISSING FOR GB00xxxx; NO CONSTANT OR LINEAR TYPE ON CALL CONTRACT`. The
+  Mobile tab offers mortgages up to 20 years (verified).
 - Probing loan payloads creates real loans; use a throwaway party.
