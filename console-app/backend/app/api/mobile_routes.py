@@ -184,6 +184,19 @@ async def get_customer(party_id: str, request: Request):
     }
 
 
+async def _loan_balances(env, loan_id: str, calls: list[dict]) -> dict:
+    """Lending's own balances for a loan (principalOutstanding, loanOutstanding,
+    accruedInterest, overdueAmount, productId, accountName, currency)."""
+    result = await call(
+        "GET", f"{env.base_url_for('Lending')}/holdings/lending/{loan_id}/balances", log=calls
+    )
+    return result.data if result.ok and isinstance(result.data, dict) else {}
+
+
+def _outstanding(balances: dict) -> float:
+    return balances.get("loanOutstanding") or balances.get("principalOutstanding") or 0
+
+
 async def _known_loans(env, loan_ids: str, listed: set[str], calls: list[dict]) -> list[dict]:
     """Loans this app created, read straight from Lending. On the local pack
     Lending and Deposits hand out the same account-id sequence, so a new
@@ -192,17 +205,14 @@ async def _known_loans(env, loan_ids: str, listed: set[str], calls: list[dict]) 
     party's arrangements. Lending's own balances endpoint still knows it."""
     found: list[dict] = []
     for loan_id in {i.strip() for i in loan_ids.split(",") if i.strip()} - listed:
-        result = await call(
-            "GET", f"{env.base_url_for('Lending')}/holdings/lending/{loan_id}/balances", log=calls
-        )
-        data = result.data if result.ok and isinstance(result.data, dict) else {}
+        data = await _loan_balances(env, loan_id, calls)
         if data.get("productId") in {p["productId"] for p in _LOAN_PRODUCTS.values()}:
             found.append({
                 "accountId": loan_id,
                 "accountName": data.get("accountName") or data["productId"],
                 "currency": data.get("currency", "USD"),
                 "status": "CURRENT",
-                "workingBalance": 0,
+                "workingBalance": _outstanding(data),
             })
     return found
 
@@ -240,6 +250,7 @@ async def get_arrangements(party_id: str, request: Request, knownLoanIds: str = 
         }
         is_loan = "LENDING" in (arr.get("productLine") or "").upper()
         if is_loan:
+            entry["workingBalance"] = _outstanding(await _loan_balances(env, account_id, calls))
             loans.append(entry)
         else:
             balance_result = await call(

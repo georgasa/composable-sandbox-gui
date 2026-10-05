@@ -58,8 +58,8 @@ const PRODUCTS: Record<LoanType, LoanProduct> = {
   },
 };
 
-function formatMoney(n: number): string {
-  return `$${n.toLocaleString("en-US")}`;
+function formatMoney(n: number, currency = "USD"): string {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 2 }).format(n || 0);
 }
 
 export function LoansScreen({ onSelectLoan }: Props) {
@@ -89,7 +89,7 @@ export function LoansScreen({ onSelectLoan }: Props) {
     const value = Number(amount);
     if (!settlementAccountId || !value) return;
     if (value < product.min || value > product.max) {
-      setError(`Amount must be between ${formatMoney(product.min)} and ${formatMoney(product.max)}.`);
+      setError(`Amount must be between ${formatMoney(product.min).replace('.00', '')} and ${formatMoney(product.max).replace('.00', '')}.`);
       return;
     }
     setSubmitting(true);
@@ -115,7 +115,8 @@ export function LoansScreen({ onSelectLoan }: Props) {
                 <span className="account-card-name">{l.accountName}</span>
                 <span className="account-card-id">...{l.accountId.slice(-4)}</span>
               </div>
-              <div className="account-card-balance">{l.status}</div>
+              <div className="account-card-balance">{formatMoney(l.workingBalance, l.currency)}</div>
+              <div className="account-card-sub">Outstanding balance · {l.status}</div>
             </div>
           ))}
         </div>
@@ -160,7 +161,7 @@ export function LoansScreen({ onSelectLoan }: Props) {
             <div className="hint-box">Open a USD account first — loans are paid out to and repaid from a USD account.</div>
           )}
           <label className="field-label">
-            Amount (USD, {formatMoney(product.min)} – {formatMoney(product.max)})
+            Amount (USD, {formatMoney(product.min).replace('.00', '')} – {formatMoney(product.max).replace('.00', '')})
           </label>
           <input
             className="text-input"

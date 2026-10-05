@@ -681,3 +681,9 @@ unprefixed name here would silently override those app-wide. */
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+.account-card-sub {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--mob-text-dim);
+}
