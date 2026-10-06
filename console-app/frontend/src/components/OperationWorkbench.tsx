@@ -4,6 +4,7 @@ import type { ExecuteResponse, OperationDetail, PrepareResponse } from "../api/t
 import { ParamForm } from "./ParamForm";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { ResponseViewer } from "./ResponseViewer";
+import { OperationDiagram } from "./OperationDiagram";
 import { useParty } from "../context/PartyContext";
 import { seedPartyId } from "../utils/seedParty";
 
@@ -128,6 +129,7 @@ export function OperationWorkbench({ opKey }: { opKey: string }) {
 
       {prepared && !executed && <ConfirmDialog prepared={prepared} onExecuted={setExecuted} />}
       {executed && <ResponseViewer result={executed} />}
+      <OperationDiagram opKey={opKey} />
     </>
   );
 }
