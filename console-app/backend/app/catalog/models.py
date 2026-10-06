@@ -46,8 +46,6 @@ class OperationSummary(CamelModel):
     tags: list[str] = Field(default_factory=list)
     documented: bool = True
     known_issue: str | None = None
-    explorer_service: str | None = None
-    explorer_group: str | None = None
 
 
 class OperationDetail(OperationSummary):
@@ -81,8 +79,6 @@ class Operation(BaseModel):
     response_ref: str | None = None
     documented: bool = True
     known_issue: str | None = None
-    explorer_service: str | None = None
-    explorer_group: str | None = None
 
     def to_summary(self) -> OperationSummary:
         return OperationSummary(
@@ -96,6 +92,4 @@ class Operation(BaseModel):
             tags=self.tags,
             documented=self.documented,
             known_issue=self.known_issue,
-            explorer_service=self.explorer_service,
-            explorer_group=self.explorer_group,
         )

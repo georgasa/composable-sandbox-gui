@@ -100,7 +100,7 @@ that cost the most time:
   auto-fill this field. Details in `SANDBOX_NOTES.md`.
 - **The local Lending service differs from the spec**: settlement accounts must
   be objects, loan ids can collide with deposit account ids (Holdings then cannot
-  list the loan), and there is no payments service to pay a loan out. See
+  list the loan), and loans are not paid out (the adapter that executes the payout is stuck). See
   `SANDBOX_NOTES.md`.
 
 ## Architecture

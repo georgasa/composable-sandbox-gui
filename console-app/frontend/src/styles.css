@@ -296,31 +296,6 @@ button {
   letter-spacing: 0.04em;
 }
 
-.group-mode-toggle {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 12px;
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 3px;
-}
-.group-mode-btn {
-  flex: 1;
-  background: none;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 8px;
-  font-size: 12px;
-  font-family: var(--font-display);
-  color: var(--text-dim);
-  cursor: pointer;
-}
-.group-mode-btn.active {
-  background: var(--brand);
-  color: var(--brand-contrast, #fff);
-}
-
 .service-group {
   margin-bottom: 6px;
 }

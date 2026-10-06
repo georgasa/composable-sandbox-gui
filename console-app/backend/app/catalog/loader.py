@@ -38,7 +38,6 @@ from typing import Any
 
 import yaml
 
-from app.catalog.explorer_taxonomy import find_explorer_category
 from app.catalog.known_issues import find_known_issue
 from app.catalog.models import Operation, ParamInfo
 from app.config import settings
@@ -179,7 +178,6 @@ def _load_one_file(path: Path, service: str) -> tuple[list[Operation], dict[str,
                     response_ref = schema["$ref"]
 
             known_issue = find_known_issue(service, method_upper, raw_path)
-            explorer_category = find_explorer_category(method_upper, raw_path)
 
             operations.append(
                 Operation(
@@ -197,8 +195,6 @@ def _load_one_file(path: Path, service: str) -> tuple[list[Operation], dict[str,
                     response_ref=response_ref,
                     documented=True,
                     known_issue=known_issue,
-                    explorer_service=explorer_category[0] if explorer_category else None,
-                    explorer_group=explorer_category[1] if explorer_category else None,
                 )
             )
 
@@ -218,7 +214,7 @@ def supplemental_operations() -> list[Operation]:
 
     def op(
         service: str, method: str, path: str, summary: str, description: str,
-        params: list[ParamInfo], tag: str = "Undocumented Holdings Query",
+        params: list[ParamInfo], tag: str = "Accounts",
     ) -> Operation:
         return Operation(
             op_key=f"{service}:{method}:{path}",
@@ -280,6 +276,7 @@ def supplemental_operations() -> list[Operation]:
             "alternateType == \"ACCOUNT\" (strip the GB0010001- prefix).",
             [ParamInfo(name="partyId", location="path", required=True,
                        schema={"type": "string", "example": "2622649730"})],
+            tag="Arrangements",
         ),
         op(
             "Party", "POST",
@@ -291,7 +288,7 @@ def supplemental_operations() -> list[Operation]:
             "Powers the \"Create New Party\" button in the session bar; the response's "
             "`id` field is the new partyId.",
             [],
-            tag="Undocumented Party Command",
+            tag="Parties",
         ),
     ]
 

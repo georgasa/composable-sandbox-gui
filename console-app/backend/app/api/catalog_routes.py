@@ -36,7 +36,14 @@ async def get_catalog(request: Request):
         service_group = grouped.setdefault(op.service, {})
         tag = op.tags[0] if op.tags else ("Undocumented" if not op.documented else "Other")
         service_group.setdefault(tag, []).append(summary.model_dump(by_alias=True))
-    return {"totalOperations": len(catalog.operations), "services": grouped}
+    # The four main categories in a fixed order, then their groups alphabetically.
+    service_order = ["Deposits", "Party", "Holdings", "Lending"]
+    services = [s for s in service_order if s in grouped] + sorted(set(grouped) - set(service_order))
+    ordered = {
+        service: {group: grouped[service][group] for group in sorted(grouped[service])}
+        for service in services
+    }
+    return {"totalOperations": len(catalog.operations), "services": ordered}
 
 
 @router.get("/catalog/{op_key:path}")
@@ -77,8 +84,6 @@ async def get_operation_detail(op_key: str, request: Request):
         tags=op.tags,
         documented=op.documented,
         known_issue=op.known_issue,
-        explorer_service=op.explorer_service,
-        explorer_group=op.explorer_group,
         base_url=request.app.state.environment.base_url_for(op.service),
         parameters=op.parameters,
         request_schema=request_schema,

@@ -116,8 +116,7 @@ tab never see the payment. Failure events are still published.
   `GET /holdings/lending/parties/{id}/loans` (HMS-0003). Lending's `balances` and
   `paymentSchedule` still answer for it, which is how the Mobile tab shows loans it
   created.
-- **No payout.** There is no payments service in the pack, so the loan's
-  `requestInternalPayOut` is never consumed and no money reaches the settlement account.
+- **Loans are not paid out.** The payout is done by the adapter, not a payments service: Lending publishes `requestInternalPayOut`, EventStore relays it on `lending-event-topic`, the adapter (`adapterservice`) calls Deposits' credit API, and the resulting `accountCredited` event makes the adapter call Lending's disbursements API. Observed 2026-10-06: the adapter repeats one failing `settlementService.creditRequest.accountCredited` event (`PathNotFoundException: $['callBackDetails']['callBackActivity']`, one request id, about once a second) and handled no `requestInternalPayOut`. The first loans (2026-10-03 06:36) did complete a payout. Working hypothesis, not yet proven: a poison event blocks the adapter's stream, so later payout requests are never executed and loans stay at 0 outstanding.
 - **Terms are limited by the holiday calendar.** The GB holiday tables stop at 2049 and the
   business date is fixed at 2025-03-14, so a term longer than 24 years fails with
   `HOLIDAY TABLE MISSING FOR GB00xxxx; NO CONSTANT OR LINEAR TYPE ON CALL CONTRACT`. The
