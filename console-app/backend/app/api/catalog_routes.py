@@ -27,23 +27,41 @@ async def get_config(request: Request):
     }
 
 
-@router.get("/catalog")
-async def get_catalog(request: Request):
-    catalog = request.app.state.catalog
+def _catalog_tree(catalog) -> dict[str, dict[str, list[dict]]]:
+    """Operations grouped by API domain, then tag, each with a short reference
+    (H1, H2, ... for Holdings; O, P, R for Order, Party, Reference) numbered in
+    display order so a reference always matches what the Catalog shows."""
+    # Top level is the API domain -- the first path segment (/holdings/...,
+    # /order/..., /party/..., /reference/...) -- not the backing service, so
+    # e.g. Deposits' and Lending's /holdings operations share one category.
+    # op.service still decides which base URL an operation is called on.
     grouped: dict[str, dict[str, list[dict]]] = {}
     for op in catalog.operations:
         summary = op.to_summary()
-        service_group = grouped.setdefault(op.service, {})
+        domain = op.path.strip("/").split("/")[0].capitalize() or "Other"
+        domain_group = grouped.setdefault(domain, {})
         tag = op.tags[0] if op.tags else ("Undocumented" if not op.documented else "Other")
-        service_group.setdefault(tag, []).append(summary.model_dump(by_alias=True))
-    # The four main categories in a fixed order, then their groups alphabetically.
-    service_order = ["Deposits", "Party", "Holdings", "Lending"]
-    services = [s for s in service_order if s in grouped] + sorted(set(grouped) - set(service_order))
+        domain_group.setdefault(tag, []).append(summary.model_dump(by_alias=True))
+    # The four domains in a fixed order, then their groups alphabetically.
+    domain_order = ["Holdings", "Order", "Party", "Reference"]
+    domains = [d for d in domain_order if d in grouped] + sorted(set(grouped) - set(domain_order))
     ordered = {
-        service: {group: grouped[service][group] for group in sorted(grouped[service])}
-        for service in services
+        domain: {group: grouped[domain][group] for group in sorted(grouped[domain])}
+        for domain in domains
     }
-    return {"totalOperations": len(catalog.operations), "services": ordered}
+    for domain, groups in ordered.items():
+        n = 0
+        for ops in groups.values():
+            for op in ops:
+                n += 1
+                op["ref"] = f"{domain[0]}{n}"
+    return ordered
+
+
+@router.get("/catalog")
+async def get_catalog(request: Request):
+    catalog = request.app.state.catalog
+    return {"totalOperations": len(catalog.operations), "services": _catalog_tree(catalog)}
 
 
 @router.get("/catalog/{op_key:path}")
@@ -90,4 +108,10 @@ async def get_operation_detail(op_key: str, request: Request):
         response_schema=response_schema,
         autofill_hints=autofill_hints,
     )
-    return detail.model_dump(by_alias=True)
+    refs = {
+        o["opKey"]: o["ref"]
+        for groups in _catalog_tree(catalog).values()
+        for ops in groups.values()
+        for o in ops
+    }
+    return {**detail.model_dump(by_alias=True), "ref": refs.get(op.op_key)}

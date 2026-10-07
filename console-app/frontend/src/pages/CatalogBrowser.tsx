@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
 import type { CatalogResponse, OperationSummary } from "../api/types";
 import { OperationWorkbench } from "../components/OperationWorkbench";
+import { ServiceBadge } from "../components/ServiceBadge";
 
 interface Props {
   /** Set by the Assistant tab's "View in Catalog" link -- see App.tsx for
@@ -12,17 +13,23 @@ interface Props {
 
 type Tree = Record<string, Record<string, OperationSummary[]>>;
 
+/** A catalog reference such as "H12" or "p3" (see op.ref). */
+const REF_PATTERN = /^[a-z]\d+$/i;
+
 function filterTree(tree: Tree, search: string): Tree {
   if (!search.trim()) return tree;
   const q = search.toLowerCase();
+  const refQuery = REF_PATTERN.test(q.trim());
   const out: Tree = {};
   for (const [service, groups] of Object.entries(tree)) {
     for (const [group, ops] of Object.entries(groups)) {
       const matches = ops.filter(
         (op) =>
-          op.summary.toLowerCase().includes(q) ||
-          op.operationId.toLowerCase().includes(q) ||
-          op.path.toLowerCase().includes(q)
+          refQuery
+            ? op.ref?.toLowerCase() === q.trim()
+            : op.summary.toLowerCase().includes(q) ||
+              op.operationId.toLowerCase().includes(q) ||
+              op.path.toLowerCase().includes(q)
       );
       if (matches.length > 0) {
         out[service] = out[service] || {};
@@ -84,6 +91,13 @@ export function CatalogBrowser({ focus }: Props) {
     setExpandedTags(tagKeys);
   }, [search, filtered]);
 
+  // Typing a full reference (e.g. "H12") jumps straight to that operation.
+  useEffect(() => {
+    if (!filtered || !REF_PATTERN.test(search.trim())) return;
+    const hit = Object.values(filtered).flatMap((tags) => Object.values(tags).flat())[0];
+    if (hit) setSelectedOpKey(hit.opKey);
+  }, [search, filtered]);
+
   // "View in Catalog" from the Assistant tab -- find which service/group
   // the operation lives under, expand straight to it, select it, and scroll it into view. Keyed off
   // `focus` (an {opKey, nonce} pair, not a bare opKey) so re-clicking the
@@ -115,11 +129,11 @@ export function CatalogBrowser({ focus }: Props) {
       <div className="catalog-panel">
         <input
           className="search-input"
-          placeholder="Search operations..."
+          placeholder="Search operations or a reference (e.g. H12)..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        {catalog && <div className="catalog-stats">{catalog.totalOperations} operations across 4 services</div>}
+        {catalog && <div className="catalog-stats">{catalog.totalOperations} operations across {Object.keys(catalog.services).length} groups</div>}
         {catalogError && (
           <div className="confirm-banner" style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
             <span>Couldn't load the catalog: {catalogError}</span>
@@ -163,10 +177,12 @@ export function CatalogBrowser({ focus }: Props) {
                               onClick={() => setSelectedOpKey(op.opKey)}
                               title={op.summary}
                             >
+                              {op.ref && <span className="op-ref">{op.ref}</span>}
                               <span className={`method-badge ${op.method}`}>{op.method}</span>
-                              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                 {op.operationId || op.path}
                               </span>
+                              <ServiceBadge service={op.service} />
                               {!op.documented && <span className="undoc-dot" title="Not in any spec file" />}
                             </button>
                           ))}

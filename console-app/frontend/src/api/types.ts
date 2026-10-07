@@ -2,6 +2,8 @@ export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 export interface OperationSummary {
   opKey: string;
+  /** Short catalog reference, e.g. "H12" (Holdings) or "P3" (Party). */
+  ref?: string;
   operationId: string;
   service: string;
   sourceFile: string;

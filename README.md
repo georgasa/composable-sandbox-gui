@@ -10,9 +10,10 @@ One app, three tabs:
 
 | Tab | What it is |
 |---|---|
-| **Catalog** | Browse and call any of 323 operations across Party, Deposits, Holdings and Lending, with a confirm-before-execute safety gate. |
+| **Catalog** | Browse and call any of 323 operations, grouped by API domain (Holdings, Order, Party, Reference), with a confirm-before-execute safety gate. |
 | **Assistant** | Describe what you want in plain English; an LLM proposes the matching API call. |
 | **Mobile** | A phone-frame mobile banking demo backed live by the APIs: accounts, transfers, personal loans and mortgages, closing accounts, with an "Under the Hood" panel showing the real calls behind each action. |
+| **Architecture** | The Composable Banking reference architecture (Deposits, Lending, Payments, Product & Pricing): runtime and system views redrawn from the Temenos architecture pictures, with hover-to-trace flows. Deep link: `#architecture/<view-id>`. |
 
 All tabs share one login (the password gate on Azure) and one **party
 session**: pin a party ID once in the top bar -- or create a demo customer from

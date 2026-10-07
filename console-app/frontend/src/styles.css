@@ -432,6 +432,47 @@ button {
   color: var(--delete);
 }
 
+/* Short catalog reference (H12, P3, ...) -- see _catalog_tree in catalog_routes.py. */
+.op-ref {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-faint);
+  min-width: 30px;
+  flex-shrink: 0;
+}
+.op-path .op-ref {
+  font-size: 13px;
+  color: var(--text-dim);
+  min-width: 0;
+  margin-right: 2px;
+}
+
+/* Which backend an operation is sent to (see ServiceBadge.tsx). */
+.service-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+.op-path .service-badge {
+  font-family: var(--font-display);
+  font-size: 11px;
+  margin-left: 4px;
+}
+.service-badge.party { color: #8a55d6; }
+.service-badge.deposits { color: #1c6fd6; }
+.service-badge.lending { color: #c2610c; }
+.service-badge.holdings { color: #0f9d58; }
+:root[data-theme="dark"] .service-badge.party { color: #b896f5; }
+:root[data-theme="dark"] .service-badge.deposits { color: #6cb4ff; }
+:root[data-theme="dark"] .service-badge.lending { color: #f5a25d; }
+:root[data-theme="dark"] .service-badge.holdings { color: #4ade8a; }
+
 .undoc-dot {
   width: 6px;
   height: 6px;

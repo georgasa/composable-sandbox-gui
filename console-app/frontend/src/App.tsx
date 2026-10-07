@@ -4,12 +4,21 @@ import type { ConfigResponse } from "./api/types";
 import { CatalogBrowser } from "./pages/CatalogBrowser";
 import { Assistant } from "./pages/Assistant";
 import { MobileSimulator } from "./pages/MobileSimulator";
+import { Architecture } from "./pages/Architecture";
 import { EnvironmentModal } from "./components/EnvironmentModal";
 import { PartySessionBar } from "./components/PartySessionBar";
 import { AuthGate } from "./components/AuthGate";
 
-type Tab = "catalog" | "assistant" | "mobile";
+type Tab = "catalog" | "assistant" | "mobile" | "architecture";
 type Theme = "light" | "dark";
+
+const TABS: Tab[] = ["catalog", "assistant", "mobile", "architecture"];
+
+/** Deep link: #architecture or #architecture/<view-id> opens that tab directly. */
+function getInitialTab(): Tab {
+  const fromHash = window.location.hash.slice(1).split("/")[0] as Tab;
+  return TABS.includes(fromHash) ? fromHash : "catalog";
+}
 
 function getInitialTheme(): Theme {
   const stored = localStorage.getItem("theme");
@@ -26,7 +35,7 @@ export function App() {
 }
 
 function AppShell() {
-  const [tab, setTab] = useState<Tab>("catalog");
+  const [tab, setTab] = useState<Tab>(getInitialTab);
   const [config, setConfig] = useState<ConfigResponse | null>(null);
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [envModalOpen, setEnvModalOpen] = useState(false);
@@ -108,6 +117,9 @@ function AppShell() {
         <button className={`tab${tab === "mobile" ? " active" : ""}`} onClick={() => setTab("mobile")}>
           Mobile
         </button>
+        <button className={`tab${tab === "architecture" ? " active" : ""}`} onClick={() => setTab("architecture")}>
+          Architecture
+        </button>
       </nav>
 
       <PartySessionBar />
@@ -116,6 +128,7 @@ function AppShell() {
         {tab === "catalog" && <CatalogBrowser focus={catalogFocus} />}
         {tab === "assistant" && <Assistant onViewInCatalog={viewInCatalog} />}
         {tab === "mobile" && <MobileSimulator />}
+        {tab === "architecture" && <Architecture />}
       </div>
     </div>
   );

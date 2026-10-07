@@ -5,6 +5,7 @@ import { ParamForm } from "./ParamForm";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { ResponseViewer } from "./ResponseViewer";
 import { OperationDiagram } from "./OperationDiagram";
+import { ServiceBadge } from "./ServiceBadge";
 import { useParty } from "../context/PartyContext";
 import { seedPartyId } from "../utils/seedParty";
 
@@ -92,8 +93,10 @@ export function OperationWorkbench({ opKey }: { opKey: string }) {
     <>
       <div className="op-header">
         <div className="op-path">
+          {detail.ref && <span className="op-ref">{detail.ref}</span>}
           <span className={`method-badge ${detail.method}`}>{detail.method}</span>
           {detail.path}
+          <ServiceBadge service={detail.service} long />
         </div>
         <div className="op-summary">{detail.summary}</div>
       </div>
