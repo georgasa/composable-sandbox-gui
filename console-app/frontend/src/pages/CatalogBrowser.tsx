@@ -40,7 +40,48 @@ function filterTree(tree: Tree, search: string): Tree {
   return out;
 }
 
+type Grouping = "domain" | "service";
+
+/** Second view of the same catalog: grouped by the backend that serves each
+ * call instead of by API domain. Refs (H11, P3, ...) are unchanged, so an ID
+ * means the same operation in both views. */
+const SERVICE_GROUPS: [string, string][] = [
+  ["Holdings", "Holdings MS"],
+  ["Deposits", "Deposits pod"],
+  ["Lending", "Lending pod"],
+  ["Party", "Party MS"],
+];
+
+function byService(tree: Tree): Tree {
+  const out: Tree = {};
+  const label = (service: string) => SERVICE_GROUPS.find(([s]) => s === service)?.[1] ?? service;
+  for (const [service] of SERVICE_GROUPS) out[label(service)] = {};
+  for (const groups of Object.values(tree)) {
+    for (const [group, ops] of Object.entries(groups)) {
+      for (const op of ops) {
+        const top = (out[label(op.service)] ??= {});
+        (top[group] ??= []).push(op);
+      }
+    }
+  }
+  const sorted: Tree = {};
+  for (const [top, groups] of Object.entries(out)) {
+    if (Object.keys(groups).length === 0) continue;
+    sorted[top] = Object.fromEntries(Object.keys(groups).sort().map((g) => [g, groups[g]]));
+  }
+  return sorted;
+}
+
+function initialGrouping(): Grouping {
+  try {
+    return localStorage.getItem("catalogGrouping") === "service" ? "service" : "domain";
+  } catch {
+    return "domain";
+  }
+}
+
 export function CatalogBrowser({ focus }: Props) {
+  const [grouping, setGrouping] = useState<Grouping>(initialGrouping);
   const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
   const [search, setSearch] = useState("");
   const [selectedOpKey, setSelectedOpKey] = useState<string | null>(null);
@@ -72,7 +113,21 @@ export function CatalogBrowser({ focus }: Props) {
 
   useEffect(loadCatalog, []);
 
-  const activeTree = catalog?.services ?? null;
+  const activeTree = useMemo(() => {
+    if (!catalog) return null;
+    return grouping === "service" ? byService(catalog.services) : catalog.services;
+  }, [catalog, grouping]);
+
+  const changeGrouping = (g: Grouping) => {
+    setGrouping(g);
+    setExpandedServices(new Set());
+    setExpandedTags(new Set());
+    try {
+      localStorage.setItem("catalogGrouping", g);
+    } catch {
+      /* storage unavailable */
+    }
+  };
 
   const filtered = useMemo(() => {
     if (!activeTree) return null;
@@ -133,7 +188,20 @@ export function CatalogBrowser({ focus }: Props) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        {catalog && <div className="catalog-stats">{catalog.totalOperations} operations across {Object.keys(catalog.services).length} groups</div>}
+        <div className="grouping-toggle" role="group" aria-label="Group operations">
+          <button className={grouping === "domain" ? "active" : ""} onClick={() => changeGrouping("domain")}>
+            By API domain
+          </button>
+          <button className={grouping === "service" ? "active" : ""} onClick={() => changeGrouping("service")}>
+            By service
+          </button>
+        </div>
+        {catalog && activeTree && (
+          <div className="catalog-stats">
+            {catalog.totalOperations} operations across {Object.keys(activeTree).length}{" "}
+            {grouping === "service" ? "services" : "groups"}
+          </div>
+        )}
         {catalogError && (
           <div className="confirm-banner" style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
             <span>Couldn't load the catalog: {catalogError}</span>

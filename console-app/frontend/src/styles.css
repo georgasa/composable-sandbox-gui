@@ -432,6 +432,32 @@ button {
   color: var(--delete);
 }
 
+/* Catalog grouping switch: by API domain / by serving backend. */
+.grouping-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-top: 10px;
+  padding: 3px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.grouping-toggle button {
+  background: none;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.grouping-toggle button.active {
+  background: var(--surface);
+  color: var(--brand);
+  box-shadow: var(--shadow-sm);
+}
+
 /* Short catalog reference (H12, P3, ...) -- see _catalog_tree in catalog_routes.py. */
 .op-ref {
   font-family: var(--font-mono);
